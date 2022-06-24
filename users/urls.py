@@ -19,5 +19,6 @@ from . import views
 
 urlpatterns = [
     path('registration', views.registration),
-    path('auth', views.auth)
+    path('auth', views.auth),
+    path('delete_user', views.delete_user)
 ]

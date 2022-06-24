@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from users.models import Users
@@ -89,3 +88,31 @@ def auth(request: HttpRequest):
         })
     except Exception as err:
         return HttpResponseBadRequest(f'Something goes wrong: {err}')
+
+
+# request:
+# {
+#     "token": str
+# }
+# response
+# {
+#     success: bool,
+#     error: if not success
+# }
+
+@csrf_exempt
+def delete_user(request: HttpRequest):
+    try:
+        values = json.loads(request.body)
+        token = values['token']
+        db.delete_user(
+            token=token
+        )
+        return JsonResponse({
+            'success': True
+        })
+    except Exception as err:
+        return JsonResponse({
+            'success': False,
+            'error': err
+        })
