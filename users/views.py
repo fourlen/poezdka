@@ -1,5 +1,6 @@
-from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest
+from django.http import HttpRequest, HttpResponseNotFound, JsonResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from users.models import Users
 import re
 import jwt
 from time import time
@@ -7,7 +8,7 @@ from poezdka.settings import SECRET_KEY
 import hashlib
 import json
 import users.db_communication as db
-
+import utils
 
 # request
 # {
@@ -22,15 +23,12 @@ import users.db_communication as db
 # {
 #     "token": token
 # }
-from users import utils
-from users.models import Users
-
 
 @csrf_exempt
 def registration(request: HttpRequest):
     try:
         values = json.loads(request.body)
-        if values['gender'] != 'male' and values['gender'] != 'female':
+        if utils.check_gender(values['gender']):
             return HttpResponseBadRequest("gender must be male or female")
         if not (utils.is_phone_number(values['login']) or utils.is_email(values['login'])):
             return HttpResponseBadRequest("login must be email or phone number")
@@ -40,7 +38,6 @@ def registration(request: HttpRequest):
         })
     except Exception as err:
         return HttpResponseBadRequest(f"Somethong goes wrong: {err}")
-
 
 # request
 # {
@@ -78,7 +75,7 @@ def auth(request: HttpRequest):
             'error': 'Wrong password'
         })
     except Exception as err:
-        return HttpResponseBadRequest(f'Something goes wrong: {err}')
+        return HttpResponseServerError(f'Something goes wrong: {err}')
 
 
 # request:
@@ -87,8 +84,7 @@ def auth(request: HttpRequest):
 # }
 # response
 # {
-#     success: bool,
-#     error: if not success
+#     success: True if success else Server error
 # }
 
 @csrf_exempt
@@ -102,7 +98,37 @@ def delete_user(request: HttpRequest):
             'success': True
         })
     except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')
+
+
+@csrf_exempt
+def get_user(request: HttpRequest):
+    try:
+        token = request.headers.get('Authorization')
+        user = db.get_user(
+            token=token
+        )
+        if not user:
+            return HttpResponseNotFound("User not found")
         return JsonResponse({
-            'success': False,
-            'error': err
+            "login": user.login,
+            "firstname": user.firstname,
+            "lastname": user.lastname,
+            "gender": user.gender,
+            "birth": user.birth
         })
+    except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')
+
+
+def update_user(request: HttpRequest):
+    try:
+        token = request.headers.get('Authorization')
+        values = json.loads(request.body)
+        if not utils.check_gender(values['gender']):
+            return HttpResponseBadRequest("gender must be male or female")
+        if not values['birth'].isdigit():
+            return HttpResponseBadRequest("birth must be integer")
+        db.update_user(values, token)
+    except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')
