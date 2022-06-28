@@ -1,0 +1,8 @@
+from django.urls import path
+
+from cars import views
+
+urlpatterns = [
+    path('add', views.add_car),
+    path('delete<id:int>', views.delete_car)
+]

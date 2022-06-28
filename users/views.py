@@ -1,6 +1,5 @@
-from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponse
+from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
-from users.models import Users
 import re
 import jwt
 from time import time
@@ -8,7 +7,7 @@ from poezdka.settings import SECRET_KEY
 import hashlib
 import json
 import users.db_communication as db
-import utils
+
 
 # request
 # {
@@ -23,6 +22,9 @@ import utils
 # {
 #     "token": token
 # }
+from users import utils
+from users.models import Users
+
 
 @csrf_exempt
 def registration(request: HttpRequest):
@@ -38,6 +40,7 @@ def registration(request: HttpRequest):
         })
     except Exception as err:
         return HttpResponseBadRequest(f"Somethong goes wrong: {err}")
+
 
 # request
 # {
@@ -75,7 +78,7 @@ def auth(request: HttpRequest):
             'error': 'Wrong password'
         })
     except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
+        return HttpResponseBadRequest(f'Something goes wrong: {err}')
 
 
 # request:
@@ -84,14 +87,14 @@ def auth(request: HttpRequest):
 # }
 # response
 # {
-#     success: True if success else Server error
+#     success: bool,
+#     error: if not success
 # }
 
 @csrf_exempt
 def delete_user(request: HttpRequest):
     try:
-        values = json.loads(request.body)
-        token = values['token']
+        token = request.headers.get('Authorization')
         db.delete_user(
             token=token
         )
@@ -99,8 +102,7 @@ def delete_user(request: HttpRequest):
             'success': True
         })
     except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
-
-
-# @csrf_exempt
-# def get_user(request: HttpRequest):
+        return JsonResponse({
+            'success': False,
+            'error': err
+        })

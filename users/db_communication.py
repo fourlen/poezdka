@@ -1,6 +1,20 @@
-from .models import Users
 import hashlib
-import utils
+
+from . import utils
+from .models import Users
+
+
+def get_user(**kwargs) -> Users:
+    return Users.objects.filter(
+        **kwargs
+    ).first()
+
+
+def delete_user(token: str):
+    Users.objects.filter(
+        token=token
+    ).delete()
+
 
 def add_user(values: dict) -> str:
     token = utils.calculate_token(values['login'])
@@ -15,15 +29,3 @@ def add_user(values: dict) -> str:
         )
     user.save()
     return token
-
-
-def get_user(**kwargs) -> Users:
-    return Users.objects.filter(
-        **kwargs
-    ).first()
-
-
-def delete_user(token: str):
-    Users.objects.filter(
-        token=token
-    ).delete()
