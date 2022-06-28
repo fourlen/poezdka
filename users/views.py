@@ -1,4 +1,4 @@
-from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest
+from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from users.models import Users
 import re
@@ -8,6 +8,7 @@ from poezdka.settings import SECRET_KEY
 import hashlib
 import json
 import users.db_communication as db
+import utils
 
 # request
 # {
@@ -29,22 +30,9 @@ def registration(request: HttpRequest):
         values = json.loads(request.body)
         if values['gender'] != 'male' and values['gender'] != 'female':
             return HttpResponseBadRequest("gender must be male or female")
-        if not (re.match(r'^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$', values['login']) or re.match(r'^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}', values['login'])):
+        if not (utils.is_phone_number(values['login']) or utils.is_email(values['login'])):
             return HttpResponseBadRequest("login must be email or phone number")
-        token = jwt.encode({
-            'login': values['login'],
-            'timestamp': str(time())
-        }, key=SECRET_KEY)
-        user = Users(
-            login=values['login'],
-            password=hashlib.sha256(values['password'].encode("utf-8")).hexdigest(),
-            token=token,
-            firstname=values['firstname'],
-            lastname=values['lastname'],
-            gender=values['gender'],
-            birth=values['birth']
-        )
-        user.save()
+        token = db.add_user(values)
         return JsonResponse({
             "token": token
         })
@@ -87,7 +75,7 @@ def auth(request: HttpRequest):
             'error': 'Wrong password'
         })
     except Exception as err:
-        return HttpResponseBadRequest(f'Something goes wrong: {err}')
+        return HttpResponseServerError(f'Something goes wrong: {err}')
 
 
 # request:
@@ -96,8 +84,7 @@ def auth(request: HttpRequest):
 # }
 # response
 # {
-#     success: bool,
-#     error: if not success
+#     success: True if success else Server error
 # }
 
 @csrf_exempt
@@ -112,7 +99,8 @@ def delete_user(request: HttpRequest):
             'success': True
         })
     except Exception as err:
-        return JsonResponse({
-            'success': False,
-            'error': err
-        })
+        return HttpResponseServerError(f'Something goes wrong: {err}')
+
+
+# @csrf_exempt
+# def get_user(request: HttpRequest):

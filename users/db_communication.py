@@ -1,4 +1,21 @@
 from .models import Users
+import hashlib
+import utils
+
+def add_user(values: dict) -> str:
+    token = utils.calculate_token(values['login'])
+    user = Users(
+            login=values['login'],
+            password=hashlib.sha256(values['password'].encode("utf-8")).hexdigest(),
+            token=token,
+            firstname=values['firstname'],
+            lastname=values['lastname'],
+            gender=values['gender'],
+            birth=values['birth']
+        )
+    user.save()
+    return token
+
 
 def get_user(**kwargs) -> Users:
     return Users.objects.filter(
