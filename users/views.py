@@ -1,4 +1,4 @@
-from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponse
+from django.http import HttpRequest, HttpResponseNotFound, JsonResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from users.models import Users
 import re
@@ -28,7 +28,7 @@ import utils
 def registration(request: HttpRequest):
     try:
         values = json.loads(request.body)
-        if values['gender'] != 'male' and values['gender'] != 'female':
+        if utils.check_gender(values['gender']):
             return HttpResponseBadRequest("gender must be male or female")
         if not (utils.is_phone_number(values['login']) or utils.is_email(values['login'])):
             return HttpResponseBadRequest("login must be email or phone number")
@@ -90,8 +90,7 @@ def auth(request: HttpRequest):
 @csrf_exempt
 def delete_user(request: HttpRequest):
     try:
-        values = json.loads(request.body)
-        token = values['token']
+        token = request.headers.get('Authorization')
         db.delete_user(
             token=token
         )
@@ -102,5 +101,34 @@ def delete_user(request: HttpRequest):
         return HttpResponseServerError(f'Something goes wrong: {err}')
 
 
-# @csrf_exempt
-# def get_user(request: HttpRequest):
+@csrf_exempt
+def get_user(request: HttpRequest):
+    try:
+        token = request.headers.get('Authorization')
+        user = db.get_user(
+            token=token
+        )
+        if not user:
+            return HttpResponseNotFound("User not found")
+        return JsonResponse({
+            "login": user.login,
+            "firstname": user.firstname,
+            "lastname": user.lastname,
+            "gender": user.gender,
+            "birth": user.birth
+        })
+    except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')
+
+
+def update_user(request: HttpRequest):
+    try:
+        token = request.headers.get('Authorization')
+        values = json.loads(request.body)
+        if not utils.check_gender(values['gender']):
+            return HttpResponseBadRequest("gender must be male or female")
+        if not values['birth'].isdigit():
+            return HttpResponseBadRequest("birth must be integer")
+        db.update_user(values, token)
+    except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')

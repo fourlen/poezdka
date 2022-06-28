@@ -17,6 +17,17 @@ def add_user(values: dict) -> str:
     return token
 
 
+def update_user(values: dict, token: str):
+    user = get_user(
+        token=token
+    )
+    user.firstname = values['firstname']
+    user.lastname = values['lastname']
+    user.gender = values['gender']
+    user.birth = values['birth']
+    user.save()
+
+
 def get_user(**kwargs) -> Users:
     return Users.objects.filter(
         **kwargs
