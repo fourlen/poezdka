@@ -1,6 +1,6 @@
 from .models import Users
 import hashlib
-import utils
+from users import utils
 
 def add_user(values: dict) -> str:
     token = utils.calculate_token(values['login'])

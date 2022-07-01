@@ -1,4 +1,5 @@
-from django.http import HttpRequest, HttpResponseNotFound, JsonResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponse
+from django.http import HttpRequest, HttpResponseNotFound, JsonResponse, HttpResponseBadRequest, \
+    HttpResponseServerError, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from users.models import Users
 import re
@@ -8,7 +9,8 @@ from poezdka.settings import SECRET_KEY
 import hashlib
 import json
 import users.db_communication as db
-import utils
+from users import utils
+
 
 # request
 # {
@@ -38,6 +40,7 @@ def registration(request: HttpRequest):
         })
     except Exception as err:
         return HttpResponseBadRequest(f"Somethong goes wrong: {err}")
+
 
 # request
 # {
