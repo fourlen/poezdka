@@ -5,6 +5,9 @@ class Trips(models.Model):
     owner = models.ForeignKey('users.Users', on_delete=models.CASCADE, blank=True, null=True)
     car = models.ForeignKey('cars.Auto', on_delete=models.CASCADE, blank=True, null=True)
     price = models.IntegerField(blank=True, null=True)
+    departure = models.CharField(max_length=100, blank=True, null=True)
+    destination = models.CharField(max_length=100, blank=True, null=True)
+
 
     class Meta:
         managed = True
