@@ -39,12 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'cars',
-
-    'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+    'social_django',
 ]
 
 SITE_ID = 1
@@ -77,6 +72,19 @@ TEMPLATES = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.vk.VKOAuth2',
+)
+
+LOGIN_URL = '/auth/login/google-oauth2/'
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+
 WSGI_APPLICATION = 'poezdka.wsgi.application'
 
 
@@ -93,10 +101,6 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-)
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -117,6 +121,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '769450572966-2bavq5a5gvehm2c5lr5satf39c2eigks.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = '8209153'
+SOCIAL_AUTH_VK_OAUTH2_SECRET = 'Io5jnSFacaiC4MyE8ZZw'
+
 
 LANGUAGE_CODE = 'en-us'
 
