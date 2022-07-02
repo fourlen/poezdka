@@ -1,5 +1,7 @@
 from cars.models import Auto
 import users.db_communication as users_db
+from django.core import serializers
+import json
 
 
 def add_car(token: str, mark=None, model=None, color=None,
@@ -16,3 +18,11 @@ def delete_car(token: str, id_: int):
     if flag:
         car.delete()
     return flag
+
+
+def get_all_cars(**kwargs):
+    return Auto.objects.filter(**kwargs).all()
+
+
+def get_all_cars_as_json(**kwargs):
+    return json.loads(serializers.serialize("json", Auto.objects.filter(**kwargs).all()))
