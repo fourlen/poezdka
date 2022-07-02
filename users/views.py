@@ -121,6 +121,7 @@ def get_user(request: HttpRequest):
         return HttpResponseServerError(f'Something goes wrong: {err}')
 
 
+@csrf_exempt
 def update_user(request: HttpRequest):
     try:
         token = request.headers.get('Authorization')
