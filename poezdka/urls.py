@@ -20,8 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('cars/', include('cars.urls')),
-<<<<<<< HEAD
     path('trips/', include('trips.views'))
-=======
->>>>>>> 1f1d4790465ea095b7008477feb0d9536787d06d
 ]
