@@ -28,6 +28,8 @@ from users.models import Users
 @csrf_exempt
 def registration(request: HttpRequest):
     try:
+        if request.method != 'POST':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
         if utils.check_gender(values['gender']):
             return HttpResponseBadRequest("gender must be male or female")
@@ -55,8 +57,9 @@ def registration(request: HttpRequest):
 
 @csrf_exempt
 def auth(request: HttpRequest):
-    print(request.headers)
     try:
+        if request.method != 'POST':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
         login = values['login']
         password = hashlib.sha256(values['password'].encode("utf-8")).hexdigest()
@@ -93,6 +96,8 @@ def auth(request: HttpRequest):
 @csrf_exempt
 def delete_user(request: HttpRequest):
     try:
+        if request.method != 'DELETE':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         token = request.headers.get('Authorization')
         db.delete_user(
             token=token
@@ -107,6 +112,8 @@ def delete_user(request: HttpRequest):
 @csrf_exempt
 def get_user(request: HttpRequest):
     try:
+        if request.method != 'GET':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         token = request.headers.get('Authorization')
         user = db.get_user(
             token=token
@@ -145,6 +152,8 @@ def get_user(request: HttpRequest):
 
 def update_user(request: HttpRequest):
     try:
+        if request.method != 'PUT':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         token = request.headers.get('Authorization')
         values = json.loads(request.body)
         if not utils.check_gender(values['gender']):
