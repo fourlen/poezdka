@@ -20,9 +20,10 @@ def add_user(values: dict, token=None) -> str:
 
 
 def add_oauth_user(values: dict):
+    token = utils.calculate_token(values['login'])
     user = Users(
         login=values['login'],
-        token=values["token"],
+        token=token,
         first_name=values['first_name'],
         last_name=values['last_name'],
     )

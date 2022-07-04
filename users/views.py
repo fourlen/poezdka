@@ -115,7 +115,6 @@ def get_user(request: HttpRequest):
             user = request.user
             db.add_oauth_user({
                 "login": user.email,
-                "token": token,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
             })
