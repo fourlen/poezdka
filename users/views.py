@@ -1,3 +1,4 @@
+from django.contrib.auth import logout
 from django.http import HttpRequest, HttpResponseNotFound, JsonResponse, HttpResponseBadRequest, \
     HttpResponseServerError, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -21,6 +22,8 @@ from users import utils
 # {
 #     "token": token
 # }
+from users.models import Users
+
 
 @csrf_exempt
 def registration(request: HttpRequest):
@@ -52,6 +55,7 @@ def registration(request: HttpRequest):
 
 @csrf_exempt
 def auth(request: HttpRequest):
+    print(request.headers)
     try:
         values = json.loads(request.body)
         login = values['login']
@@ -108,11 +112,25 @@ def get_user(request: HttpRequest):
             token=token
         )
         if not user:
-            return HttpResponseNotFound("User not found")
+            user = request.user
+            db.add_oauth_user({
+                "login": user.email,
+                "token": token,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+            })
+            return JsonResponse({
+                "login": user.email,
+                "firstname": user.first_name,
+                "lastname": user.last_name,
+                "gender": None,
+                "birth": None,
+                "cars": None,
+            })
         return JsonResponse({
             "login": user.login,
-            "firstname": user.firstname,
-            "lastname": user.lastname,
+            "firstname": user.first_name,
+            "lastname": user.last_name,
             "gender": user.gender,
             "birth": user.birth,
             "cars": cars_db.get_all_cars_as_json(
