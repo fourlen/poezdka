@@ -113,19 +113,22 @@ def get_user(request: HttpRequest):
         )
         if not user:
             user = request.user
-            db.add_oauth_user({
-                "login": user.email,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-            })
-            return JsonResponse({
-                "login": user.email,
-                "firstname": user.first_name,
-                "lastname": user.last_name,
-                "gender": None,
-                "birth": None,
-                "cars": None,
-            })
+            if not db.get_user(
+                login=user.email,
+            ) and user.email:
+                db.add_oauth_user({
+                    "login": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                })
+                return JsonResponse({
+                    "login": user.email,
+                    "firstname": user.first_name,
+                    "lastname": user.last_name,
+                    "gender": None,
+                    "birth": None,
+                    "cars": None,
+                })
         return JsonResponse({
             "login": user.login,
             "firstname": user.first_name,
