@@ -22,4 +22,5 @@ urlpatterns = [
     path('delete_user', views.delete_user),
     path('', include('social_django.urls', namespace='social')),
     path('get_user', views.get_user),
+    path('update_user', views.update_user),
 ]

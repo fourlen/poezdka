@@ -20,9 +20,14 @@ def delete_car(token: str, id_: int):
     return flag
 
 
-def get_all_cars(**kwargs):
-    return Auto.objects.filter(**kwargs).all()
+def get_car(id_: int):
+    return Auto.objects.get(id=id_)
 
 
-def get_all_cars_as_json(**kwargs):
-    return json.loads(serializers.serialize("json", Auto.objects.filter(**kwargs).all()))
+def get_all_cars(token):
+    user = users_db.get_user(token=token)
+    return Auto.objects.filter(owner=user).all()
+
+
+def get_all_cars_as_json(token):
+    return json.loads(serializers.serialize("json", get_all_cars(token)))

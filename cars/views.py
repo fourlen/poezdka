@@ -1,7 +1,7 @@
 import json
 
 from django.db import IntegrityError
-from django.http import HttpRequest, HttpResponseBadRequest, JsonResponse
+from django.http import HttpRequest, HttpResponseBadRequest, JsonResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 
 from cars import db_communication as db
@@ -15,14 +15,20 @@ def add_car(request: HttpRequest):
         values = json.loads(request.body)
         token = request.headers.get('Authorization')
         db.add_car(token, mark=values["mark"], model=values["model"], color=values["color"],
-                         vehicle_number=values["vehicle_number"], count_of_passengers=values["count_of_passengers"])
+                   vehicle_number=values["vehicle_number"], count_of_passengers=values["count_of_passengers"])
         return JsonResponse(
             {
                 "success": True,
+                "status": "Car created"
             }
         )
-    except IntegrityError as ex:
-        return HttpResponseBadRequest("Car already exist")
+    except IntegrityError:
+        JsonResponse(
+            {
+                "success": False,
+                "status": "Car already exists",
+            }
+        )
     except Exception as ex:
         return HttpResponseBadRequest(ex)
 
@@ -44,8 +50,22 @@ def delete_car(request: HttpRequest, id_: int):
         else:
             return JsonResponse(
                 {
-                    "success": True
+                    "success": True,
+                    "status": "Car deleted",
                 }
             )
     except Exception as ex:
         return HttpResponseBadRequest(ex)
+
+
+@csrf_exempt
+def get_cars(request: HttpRequest):
+    try:
+        if request.method != 'GET':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
+        token = request.headers.get('Authorization')
+        return JsonResponse({
+            "cars": db.get_all_cars_as_json(token)
+        })
+    except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')

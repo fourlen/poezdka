@@ -8,7 +8,6 @@ import users.db_communication as db
 import cars.db_communication as cars_db
 from users import utils
 
-
 # request
 # {
 #     "login": str,
@@ -121,22 +120,29 @@ def get_user(request: HttpRequest):
         if not user:
             user = request.user
             if not db.get_user(
-                login=user.email,
-            ) and user.email:
-                db.add_oauth_user({
-                    "login": user.email,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                })
-                return JsonResponse({
-                    "login": user.email,
-                    "firstname": user.first_name,
-                    "lastname": user.last_name,
-                    "gender": None,
-                    "birth": None,
-                    "cars": None,
-                })
+                    login=user.email,
+            ):
+                if user.email:
+                    return JsonResponse({
+                        "token": db.add_oauth_user({
+                            "login": user.email,
+                            "first_name": user.first_name,
+                            "last_name": user.last_name,
+                        }),
+                        "login": user.email,
+                        "firstname": user.first_name,
+                        "lastname": user.last_name,
+                        "gender": None,
+                        "birth": None,
+                        "cars": None,
+                    })
+                else:
+                    return HttpResponseServerError(f'Something goes wrong: Unauthorized')
+            user = db.get_user(
+                login=user.email
+            )
         return JsonResponse({
+            "token": user.token,
             "login": user.login,
             "firstname": user.first_name,
             "lastname": user.last_name,
@@ -160,6 +166,16 @@ def update_user(request: HttpRequest):
             return HttpResponseBadRequest("gender must be male or female")
         if not values['birth'].isdigit():
             return HttpResponseBadRequest("birth must be integer")
-        db.update_user(values, token)
+        user = db.update_user(values, token)
+        return JsonResponse({
+            "login": user.login,
+            "firstname": user.first_name,
+            "lastname": user.last_name,
+            "gender": user.gender,
+            "birth": user.birth,
+            "cars": cars_db.get_all_cars_as_json(
+                owner=user
+            )
+        })
     except Exception as err:
         return HttpResponseServerError(f'Something goes wrong: {err}')

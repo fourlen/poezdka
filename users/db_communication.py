@@ -13,7 +13,7 @@ def add_user(values: dict, token=None) -> str:
         first_name=values['firstname'],
         last_name=values['lastname'],
         gender=values['gender'],
-        birth=values['birth']
+        birth=values['birth'],
     )
     user.save()
     return token
@@ -28,6 +28,7 @@ def add_oauth_user(values: dict):
         last_name=values['last_name'],
     )
     user.save()
+    return token
 
 
 def update_user(values: dict, token: str):
@@ -39,6 +40,7 @@ def update_user(values: dict, token: str):
     user.gender = values['gender']
     user.birth = values['birth']
     user.save()
+    return user
 
 
 def get_user(**kwargs) -> Users:
