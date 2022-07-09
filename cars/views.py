@@ -14,8 +14,7 @@ def add_car(request: HttpRequest):
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
         token = request.headers.get('Authorization')
-        db.add_car(token, mark=values["mark"], model=values["model"], color=values["color"],
-                   vehicle_number=values["vehicle_number"], count_of_passengers=values["count_of_passengers"])
+        db.add_car(values, token)
         return JsonResponse(
             {
                 "success": True,

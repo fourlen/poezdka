@@ -4,10 +4,15 @@ from django.core import serializers
 import json
 
 
-def add_car(token: str, mark=None, model=None, color=None,
-            vehicle_number=None, count_of_passengers=None):
-    car = Auto(owner=users_db.get_user(token=token), mark=mark, model=model, color=color,
-               vehicle_number=vehicle_number, count_of_passengers=count_of_passengers)
+def add_car(values, token: str):
+    car = Auto(
+        owner=users_db.get_user(token=token),
+        mark=values["mark"],
+        model=values["model"],
+        color=values["color"],
+        vehicle_number=values["vehicle_number"],
+        count_of_passengers=values["count_of_passengers"],
+    )
     car.save()
 
 

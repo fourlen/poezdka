@@ -1,11 +1,8 @@
 import json
 
 from django.http import HttpRequest, HttpResponseServerError, JsonResponse, HttpResponseBadRequest
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import trips.db_communication as db
-from trips.models import Trips
-from users.models import Users
 
 
 @csrf_exempt
@@ -22,6 +19,31 @@ def add_trip(request: HttpRequest):
         })
     except Exception as ex:
         return HttpResponseServerError(f'Something goes wrong: {ex}')
+
+
+@csrf_exempt
+def delete_trip(request: HttpRequest, id_: int):
+    try:
+        if request.method != 'DELETE':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
+        token = request.headers.get('Authorization')
+        status = db.delete_trip(token, id_)
+        if not status:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Access denied"
+                }
+            )
+        else:
+            return JsonResponse(
+                {
+                    "success": True,
+                    "status": "Trip deleted",
+                }
+            )
+    except Exception as ex:
+        return HttpResponseBadRequest(ex)
 
 
 @csrf_exempt

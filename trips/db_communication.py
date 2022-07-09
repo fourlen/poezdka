@@ -14,9 +14,8 @@ def get_all_trips_as_json(**kwargs):
 
 
 def add_trip(values, token):
-    user = users_db.get_user(token=token)
     trip = Trips(
-        owner=user,
+        owner=users_db.get_user(token=token),
         car=cars_db.get_car(values["car"]),
         price=values["price"],
         departure=values["departure"],
@@ -25,6 +24,15 @@ def add_trip(values, token):
         end=values["end"],
     )
     trip.save()
+
+
+def delete_trip(token: str, id_: int):
+    user = users_db.get_user(token=token)
+    trip = Trips.objects.get(id=id_)
+    flag = trip.owner is user
+    if flag:
+        trip.delete()
+    return flag
 
 
 def get_trips(token):
