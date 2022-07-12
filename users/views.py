@@ -140,23 +140,9 @@ def get_user(request: HttpRequest):
             user = db.get_user(
                 login=user.email
             )
-<<<<<<< HEAD
-        return JsonResponse({
-            "token": user.token,
-            "login": user.login,
-            "firstname": user.first_name,
-            "lastname": user.last_name,
-            "gender": user.gender,
-            "birth": user.birth,
-            "cars": cars_db.get_all_cars_as_json(
-                token=token
-            )
-        })
-=======
         return JsonResponse(
             db.get_user_as_json(user)
         )
->>>>>>> 6ff3f0e69c7234f5349af73cf5f2eb952c527a04
     except Exception as err:
         logger.error(err)
         return HttpResponseServerError(f'Something goes wrong: Unauthorized')
