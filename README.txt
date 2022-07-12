@@ -1,4 +1,4 @@
-http://ystories.site:70/:
+http://194.87.145.140/:
     user/:
         registration/:
             POST
@@ -104,15 +104,43 @@ http://ystories.site:70/:
                     "destination": str,
                     "start": int (Timestamp),
                     "end": int (Timestamp),
-            response:
-                body:
-                    "owner": int,
-                    "car": int,
-                    "price": int,
-                    "departure": str,
-                    "destination": str,
-                    "start": int (Timestamp),
-                    "end": int (Timestamp),
+            response
+            {
+                "success": bool,
+                "status": str,
+            }
+        delete<int::id>/:
+            DELETE
+            request:
+                Headers:
+                    "Authorisation": str
+            response
+            {
+                "success": bool,
+                "status": str,
+            }
+	get_trips/:
+            GET
+            request:
+                Headers:
+                    "Authorisation": str
+            response
+		{
+    		"trips": [
+        		{
+            		"model": str,
+            		"pk": id,
+            		"fields": {
+                		"owner": int,
+                		"car": int,
+                		"price": int,
+                		"departure": str,
+                		"destination": str,
+                		"start": int,
+                		"end": int
+            			}
+        		}
+    		]}
     cars/:
         add/:
             request:
@@ -129,7 +157,26 @@ http://ystories.site:70/:
                 "success": bool,
                 "status": str,
             }
-        delete_car<int::id>/:
+	get_cars/:
+            GET
+            request:
+                Headers:
+                    "Authorisation": str
+            response
+		{
+                "cars": [{
+                    "model": string,
+                    "pk": int,
+                    "fields": {
+                        "owner": int,
+                        "mark": str,
+                        "model": str,
+                        "color": str,
+                        "vehicle_number": str,
+                        "count_of_passengers": int
+                }]
+    		]}
+        delete<int::id>/:
             DELETE
             request:
                 Headers:
@@ -139,3 +186,22 @@ http://ystories.site:70/:
                 "success": bool,
                 "status": str,
             }
+	get_cars/:
+            GET
+            request:
+                Headers:
+                    "Authorisation": str
+            response
+		{
+                "cars": [{
+                    "model": string,
+                    "pk": int,
+                    "fields": {
+                        "owner": int,
+                        "mark": str,
+                        "model": str,
+                        "color": str,
+                        "vehicle_number": str,
+                        "count_of_passengers": int
+                }]
+    		]}
