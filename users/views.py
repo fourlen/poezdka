@@ -30,7 +30,7 @@ def registration(request: HttpRequest):
         if request.method != 'POST':
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
-        if utils.check_gender(values['gender']):
+        if not utils.check_gender(values['gender']):
             return HttpResponseBadRequest("gender must be male or female")
         if not (utils.is_phone_number(values['login']) or utils.is_email(values['login'])):
             return HttpResponseBadRequest("login must be email or phone number")
@@ -67,7 +67,7 @@ def auth(request: HttpRequest):
         )
         if user is None:
             return JsonResponse({
-                'authorized': True,
+                'authorized': False,
                 'error': 'User with such login does not exists'
             })
         if user.password == password:
@@ -149,7 +149,7 @@ def get_user(request: HttpRequest):
             "gender": user.gender,
             "birth": user.birth,
             "cars": cars_db.get_all_cars_as_json(
-                owner=user
+                token=token
             )
         })
     except Exception as err:

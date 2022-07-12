@@ -35,4 +35,13 @@ def get_all_cars(token):
 
 
 def get_all_cars_as_json(token):
-    return json.loads(serializers.serialize("json", get_all_cars(token)))
+    return [{
+            'pk': car.id,
+            'owner': car.owner.id,
+            'mark': car.mark,
+            'model': car.model,
+            'color': car.color,
+            'vehicle_number': car.vehicle_number,
+            'count_of_passengers': car.count_of_passengers
+        } for car in get_all_cars(token)]
+    # return json.loads(serializers.serialize("json", get_all_cars(token)))
