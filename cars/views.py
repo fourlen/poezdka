@@ -22,7 +22,7 @@ def add_car(request: HttpRequest):
             }
         )
     except IntegrityError:
-        JsonResponse(
+        return JsonResponse(
             {
                 "success": False,
                 "status": "Car already exists",

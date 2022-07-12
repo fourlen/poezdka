@@ -4,6 +4,9 @@ from django.http import HttpRequest, HttpResponseNotFound, JsonResponse, HttpRes
 from django.views.decorators.csrf import csrf_exempt
 import hashlib
 import json
+
+from loguru import logger
+
 import users.db_communication as db
 import cars.db_communication as cars_db
 from users import utils
@@ -30,7 +33,7 @@ def registration(request: HttpRequest):
         if request.method != 'POST':
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
-        if utils.check_gender(values['gender']):
+        if not utils.check_gender(values['gender']):
             return HttpResponseBadRequest("gender must be male or female")
         if not (utils.is_phone_number(values['login']) or utils.is_email(values['login'])):
             return HttpResponseBadRequest("login must be email or phone number")
@@ -39,7 +42,7 @@ def registration(request: HttpRequest):
             "token": token
         })
     except Exception as err:
-        return HttpResponseBadRequest(f"Somethong goes wrong: {err}")
+        return HttpResponseBadRequest(f"Something goes wrong: {err}")
 
 
 # request
@@ -47,7 +50,7 @@ def registration(request: HttpRequest):
 #     'login': str,
 #     'password': str
 # }
-# reponse:
+# response:
 # {
 #     'authorized': bool,
 #     'token': str (if authorized)
@@ -67,7 +70,7 @@ def auth(request: HttpRequest):
         )
         if user is None:
             return JsonResponse({
-                'authorized': True,
+                'authorized': False,
                 'error': 'User with such login does not exists'
             })
         if user.password == password:
@@ -123,39 +126,29 @@ def get_user(request: HttpRequest):
                     login=user.email,
             ):
                 if user.email:
-                    return JsonResponse({
-                        "token": db.add_oauth_user({
-                            "login": user.email,
-                            "first_name": user.first_name,
-                            "last_name": user.last_name,
-                        }),
-                        "login": user.email,
-                        "firstname": user.first_name,
-                        "lastname": user.last_name,
-                        "gender": None,
-                        "birth": None,
-                        "cars": None,
-                    })
+                    return JsonResponse(
+                        db.add_oauth_user(
+                            {
+                                "login": user.email,
+                                "first_name": user.first_name,
+                                "last_name": user.last_name,
+                            }
+                        )
+                    )
                 else:
                     return HttpResponseServerError(f'Something goes wrong: Unauthorized')
             user = db.get_user(
                 login=user.email
             )
-        return JsonResponse({
-            "token": user.token,
-            "login": user.login,
-            "firstname": user.first_name,
-            "lastname": user.last_name,
-            "gender": user.gender,
-            "birth": user.birth,
-            "cars": cars_db.get_all_cars_as_json(
-                owner=user
-            )
-        })
+        return JsonResponse(
+            db.get_user_as_json(user)
+        )
     except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
+        logger.error(err)
+        return HttpResponseServerError(f'Something goes wrong: Unauthorized')
 
 
+@csrf_exempt
 def update_user(request: HttpRequest):
     try:
         if request.method != 'PUT':
@@ -166,16 +159,8 @@ def update_user(request: HttpRequest):
             return HttpResponseBadRequest("gender must be male or female")
         if not values['birth'].isdigit():
             return HttpResponseBadRequest("birth must be integer")
-        user = db.update_user(values, token)
-        return JsonResponse({
-            "login": user.login,
-            "firstname": user.first_name,
-            "lastname": user.last_name,
-            "gender": user.gender,
-            "birth": user.birth,
-            "cars": cars_db.get_all_cars_as_json(
-                owner=user
-            )
-        })
+        return JsonResponse(
+            db.update_user(values, token)
+        )
     except Exception as err:
         return HttpResponseServerError(f'Something goes wrong: {err}')

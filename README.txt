@@ -157,6 +157,25 @@ http://194.87.145.140/:
                 "success": bool,
                 "status": str,
             }
+	get_cars/:
+            GET
+            request:
+                Headers:
+                    "Authorisation": str
+            response
+		{
+                "cars": [{
+                    "model": string,
+                    "pk": int,
+                    "fields": {
+                        "owner": int,
+                        "mark": str,
+                        "model": str,
+                        "color": str,
+                        "vehicle_number": str,
+                        "count_of_passengers": int
+                }]
+    		]}
         delete<int::id>/:
             DELETE
             request:

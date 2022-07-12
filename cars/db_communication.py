@@ -19,7 +19,7 @@ def add_car(values, token: str):
 def delete_car(token: str, id_: int):
     user = users_db.get_user(token=token)
     car = Auto.objects.get(id=id_)
-    flag = car.owner is user
+    flag = car.owner == user
     if flag:
         car.delete()
     return flag
