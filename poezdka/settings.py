@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'chat',
     'trips',
     'social_django',
+    'booking'
 ]
 
 SITE_ID = 1

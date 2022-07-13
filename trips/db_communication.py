@@ -28,11 +28,17 @@ def add_trip(values, token):
 
 def delete_trip(token: str, id_: int):
     user = users_db.get_user(token=token)
-    trip = Trips.objects.get(id=id_)
-    flag = trip.owner is user
+    trip = get_target_trip(id=id_)
+    flag = trip.owner == user
     if flag:
         trip.delete()
     return flag
+
+
+def get_target_trip(**kwargs) -> Trips:
+    return Trips.objects.filter(
+        **kwargs
+    ).first()
 
 
 def get_trips(token):
@@ -42,3 +48,11 @@ def get_trips(token):
 
 def get_trips_as_json(token):
     return json.loads(serializers.serialize("json", get_trips(token)))
+
+
+def is_exists(id_):
+    try:
+        trip = get_target_trip(id=id_)
+        return trip.id
+    except Exception:
+        return False
