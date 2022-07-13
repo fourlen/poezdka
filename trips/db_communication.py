@@ -3,6 +3,8 @@ from django.core import serializers
 import json
 import users.db_communication as users_db
 import cars.db_communication as cars_db
+import booking.db_communication as booking_db
+import time
 
 
 def get_all_trips(**kwargs):
@@ -43,11 +45,63 @@ def get_target_trip(**kwargs) -> Trips:
 
 def get_trips(token):
     user = users_db.get_user(token=token)
-    return Trips.objects.filter(owner=user).all()
+    return list(
+        filter(
+            lambda x: time.time() - x.end < 0,
+            Trips.objects.filter(owner=user).all()
+        )
+    )
 
 
 def get_trips_as_json(token):
     return json.loads(serializers.serialize("json", get_trips(token)))
+
+
+def get_past_trips(token):
+    user = users_db.get_user(token=token)
+    return list(
+        filter(
+            lambda x: time.time() - x.end > 0,
+            Trips.objects.filter(owner=user).all()
+        )
+    )
+
+
+def get_past_trips_as_json(token):
+    return json.loads(serializers.serialize("json", get_past_trips(token)))
+
+
+def get_all_booking(token):
+    user = users_db.get_user(token=token)
+    return booking_db.get_all_booking(owner=user)
+
+
+def get_booked_trips(token):
+    all_booking = get_all_booking(token)
+    return list(
+        filter(
+            lambda x: time.time() - x.end < 0,
+            [Trips.objects.get(id=i.trip_id) for i in all_booking]
+        )
+    )
+
+
+def get_booked_trips_as_json(token):
+    return json.loads(serializers.serialize("json", get_booked_trips(token)))
+
+
+def get_past_booked_trips(token):
+    all_booking = get_all_booking(token)
+    return list(
+        filter(
+            lambda x: time.time() - x.end > 0,
+            [Trips.objects.get(id=i.trip_id) for i in all_booking]
+        )
+    )
+
+
+def get_past_booked_trips_as_json(token):
+    return json.loads(serializers.serialize("json", get_past_booked_trips(token)))
 
 
 def is_exists(id_):

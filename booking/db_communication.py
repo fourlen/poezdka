@@ -51,6 +51,12 @@ def get_booking(**kwargs) -> Booking:
     ).first()
 
 
+def get_all_booking(owner):
+    return Booking.objects.filter(
+        owner=owner
+    ).all()
+
+
 def ban_user(user, booking: Booking):
     ban = BannedUsers(
         user=user,

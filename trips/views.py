@@ -57,3 +57,42 @@ def get_trips(request: HttpRequest):
         })
     except Exception as err:
         return HttpResponseServerError(f'Something goes wrong: {err}')
+
+
+@csrf_exempt
+def get_past_trips(request: HttpRequest):
+    try:
+        if request.method != 'GET':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
+        token = request.headers.get('Authorization')
+        return JsonResponse({
+            "trips": db.get_past_trips_as_json(token)
+        })
+    except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')
+
+
+@csrf_exempt
+def get_booked_trips(request: HttpRequest):
+    try:
+        if request.method != 'GET':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
+        token = request.headers.get('Authorization')
+        return JsonResponse({
+            "trips": db.get_booked_trips_as_json(token)
+        })
+    except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')
+
+
+@csrf_exempt
+def get_past_booked_trips(request: HttpRequest):
+    try:
+        if request.method != 'GET':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
+        token = request.headers.get('Authorization')
+        return JsonResponse({
+            "trips": db.get_past_booked_trips_as_json(token)
+        })
+    except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')
