@@ -9,6 +9,7 @@ class Trips(models.Model):
     destination = models.CharField(max_length=100, blank=True, null=True)
     start = models.IntegerField(blank=True, null=True)
     end = models.IntegerField(blank=True, null=True)
+    
 
     class Meta:
         managed = True
