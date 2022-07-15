@@ -6,6 +6,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 # Импорт модели сообщений
 from .models import Message
+from users.models import Users
  
  
 # Класс ChatConsumer
@@ -14,7 +15,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Метод подключения к WS
     async def connect(self):
         # Назначим пользователя в комнату
-        self.room_group_name = "1"
+        self.room_name = self.scope['path'].split('/')[-1]
+        self.room_group_name = 'chat_%s' % self.room_name
         # Добавляем новую комнату
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -44,15 +46,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         # Получаем текст сообщения
         message = text_data_json['message']
+        to = text_data_json['to']
         
         # Добавляем сообщение в БД 
         await self.new_message(message=message)
         
         # Отправляем сообщение 
         await self.channel_layer.group_send(
-            self.room_group_name,
+            'chat_' + to,
             {
                 'type': 'chat_message',
+                'from': self.room_name,
                 'message': message,
             }
         )
@@ -63,5 +67,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = event['message']
         # Отправляем сообщение клиентам
         await self.send(text_data=json.dumps({
+            'from': event['from'],
             'message': message,
         }, ensure_ascii=False))
