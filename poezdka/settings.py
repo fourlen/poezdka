@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'channels',
     'trips',
     'social_django',
+    'booking'
 ]
 
 ASGI_APPLICATION = 'poezdka.asgi.application'
