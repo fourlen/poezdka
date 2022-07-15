@@ -40,10 +40,13 @@ INSTALLED_APPS = [
     'users',
     'cars',
     'chat',
+    'channels',
     'trips',
     'social_django',
     'booking'
 ]
+
+ASGI_APPLICATION = 'poezdka.asgi.application'
 
 SITE_ID = 1
 
@@ -112,7 +115,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [('188.93.211.173', 6379)],
         },
     },
 }
