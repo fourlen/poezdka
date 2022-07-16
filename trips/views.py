@@ -96,3 +96,16 @@ def get_past_booked_trips(request: HttpRequest):
         })
     except Exception as err:
         return HttpResponseServerError(f'Something goes wrong: {err}')
+
+
+@csrf_exempt
+def main_trips(request: HttpRequest):
+    try:
+        if request.method != 'GET':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
+        values = json.loads(request.body)
+        return JsonResponse(
+            db.get_main_trips(values)
+        )
+    except Exception as err:
+        return HttpResponseServerError(f'Something goes wrong: {err}')

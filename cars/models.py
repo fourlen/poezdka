@@ -8,6 +8,7 @@ class Auto(models.Model):
     color = models.CharField(max_length=100, blank=True, null=True)
     vehicle_number = models.CharField(max_length=20, blank=True, null=True, unique=True)
     count_of_passengers = models.IntegerField(blank=True, null=True)
+    conditioner = models.BooleanField(blank=False, default=False)
 
     class Meta:
         managed = True
