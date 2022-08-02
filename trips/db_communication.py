@@ -15,12 +15,19 @@ def get_all_trips():
 
 
 def add_trip(values, token):
-    trip = Trips(
-        owner=users_db.get_user(token=token),
-        car=cars_db.get_car(values["car"]),
-        price=values["price"],
-        start=values["start"],
-    )
+    try:
+        trip = Trips(
+            owner=users_db.get_user(token=token),
+            car=cars_db.get_car(values["car"]),
+            price=values["price"],
+            start=values["start"],
+        )
+    except KeyError:
+        trip = Trips(
+            owner=users_db.get_user(token=token),
+            price=values["price"],
+            start=values["start"],
+        )
     try:
         trip.animals = values["animals"]
     except KeyError:
@@ -170,7 +177,16 @@ def is_exists(id_):
 def get_main_future_trips(all_trips):
     return list(
         filter(
-            lambda x: time.time() - x.start > 0,
+            lambda x: time.time() - x.start > 0 and x.car,
+            all_trips
+        )
+    )
+
+
+def get_drivers_future_trips(all_trips):
+    return list(
+        filter(
+            lambda x: time.time() - x.start > 0 and not x.car,
             all_trips
         )
     )
@@ -225,6 +241,24 @@ def get_main_trips(values: dict):
     )
 
 
+def get_drivers_trips(values: dict):
+    all_trips = []
+    for trip in get_drivers_future_trips(filter_trips(values)):
+        if utils.filter_by_departure(
+                get_departure(trip),
+                values["departure"]
+        ) and utils.filter_by_destination(
+                get_stops(trip),
+                values["destination"]
+        ):
+            all_trips.append(trip)
+    return list(
+        map(
+            pretty_trip, all_trips
+        )
+    )
+
+
 def get_departure(trip):
     return Departure.objects.get(trip=trip)
 
@@ -262,8 +296,6 @@ def pretty_stop(stop: Stops):
 
 
 def pretty_trip(trip: Trips):
-    print(Departure.objects.values())
-    print(trip)
     departure = get_departure(trip)
     stops = get_stops(trip)
     return {
