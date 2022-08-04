@@ -101,7 +101,7 @@ def get_past_booked_trips(request: HttpRequest):
 @csrf_exempt
 def main_trips(request: HttpRequest):
     try:
-        if request.method != 'GET':
+        if request.method != 'POST':
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
         return JsonResponse(
@@ -114,7 +114,7 @@ def main_trips(request: HttpRequest):
 @csrf_exempt
 def main_drivers_trips(request: HttpRequest):
     try:
-        if request.method != 'GET':
+        if request.method != 'POST':
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
         return JsonResponse(

@@ -79,3 +79,11 @@ def get_user_as_json(user) -> dict:
         "birth": user.birth,
         "cars": cars_db.get_all_cars_as_json(user.token),
     }
+
+
+def get_user_for_trip(user) -> dict:
+    return {
+        "phone": user.login if utils.is_phone_number(user.login) else None,
+        "firstname": user.first_name,
+        "lastname": user.last_name,
+    }
