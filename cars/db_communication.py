@@ -11,10 +11,6 @@ def add_car(values: dict, token: str):
         vehicle_number=values["vehicle_number"],
         count_of_passengers=values["count_of_passengers"],
     )
-    try:
-        car.conditioner = values["conditioner"]
-    except TypeError:
-        pass
     car.save()
 
 

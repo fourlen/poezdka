@@ -1,4 +1,5 @@
 from django.db.models import QuerySet
+from werkzeug.exceptions import Unauthorized
 
 from trips.models import *
 from django.core import serializers
@@ -16,12 +17,14 @@ def get_all_trips():
 
 def add_trip(values, token):
     user = users_db.get_user(token=token)
+    if not user:
+        raise Unauthorized
     try:
         car = cars_db.get_car(values["car"])
         if car.owner != user:
             raise Exception("Not your car, hacker")
         trip = Trips(
-            owner=users_db.get_user(token=token),
+            owner=user,
             car=car,
             price=values["price"],
             start=values["start"],
@@ -54,6 +57,10 @@ def add_trip(values, token):
         pass
     try:
         trip.two_places_in_behind = values["two_places_in_behind"]
+    except KeyError:
+        pass
+    try:
+        trip.conditioner = values["conditioner"]
     except KeyError:
         pass
     trip.save()
@@ -227,21 +234,24 @@ def filter_trips(values: dict):
             two_places_in_behind=True
         ).all()
     if values["conditioner"]:
-        all_trips = utils.filter_by_conditioner_and_gender(all_trips, values["gender"])
+        all_trips = all_trips.filter(
+            conditioner=True
+        ).all()
+    if values["owner_gender"]:
+        all_trips = utils.filter_by_gender(all_trips, gender=values["owner_gender"])
     return all_trips
 
 
-def get_main_trips(values: dict):
-    all_trips = []
+def get_filter_trips(values: dict, all_trips):
     if "departure" not in values or "destination" not in values:
         return {
             "all_trips": list(
                 map(
-                    pretty_trip, get_main_future_trips(get_all_trips())
+                    pretty_trip, all_trips
                 )
             )
         }
-    for trip in get_main_future_trips(filter_trips(values)):
+    for trip in all_trips:
         if utils.filter_by_departure(
                 get_departure(trip),
                 values["departure"]
@@ -257,32 +267,6 @@ def get_main_trips(values: dict):
                 )
             )
         }
-
-
-def get_drivers_trips(values: dict):
-    all_trips = []
-    for trip in get_drivers_future_trips(filter_trips(values)):
-        if "departure" not in values or "destination" not in values:
-            return {
-                "all_trips": list(
-                    map(
-                        pretty_trip, get_drivers_future_trips(get_all_trips())
-                    )
-                )
-            }
-        if utils.filter_by_departure(
-                get_departure(trip),
-                values["departure"]
-        ) and utils.filter_by_destination(
-                get_stops(trip),
-                values["destination"]
-        ):
-            all_trips.append(trip)
-    return list(
-        map(
-            pretty_trip, all_trips
-        )
-    )
 
 
 def get_departure(trip):
@@ -329,7 +313,7 @@ def pretty_trip(trip: Trips):
         "owner": users_db.get_user_for_trip(trip.owner),
         "car": cars_db.get_car_as_json(
             trip.car
-        ),
+        ) if trip.car else None,
         "price": trip.price,
         "time_start": trip.start,
         "departure": pretty_departure(departure),
@@ -343,6 +327,6 @@ def pretty_trip(trip: Trips):
         "animals": trip.animals,
         "two_places_in_behind": trip.two_places_in_behind,
         "passengers": [users_db.get_user_for_trip(i) for i in booking_db.get_passengers(trip.id)],
-        "conditioner": trip.car.conditioner,
+        "conditioner": trip.conditioner,
         "owner_gender": trip.owner.gender,
     }

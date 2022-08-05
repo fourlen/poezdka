@@ -105,7 +105,7 @@ def main_trips(request: HttpRequest):
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
         return JsonResponse(
-            db.get_main_trips(values)
+            db.get_filter_trips(values, db.get_main_future_trips(db.filter_trips(values)))
         )
     except Exception as err:
         return HttpResponseServerError(f'Something goes wrong: {err}')
@@ -118,7 +118,7 @@ def main_drivers_trips(request: HttpRequest):
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
         return JsonResponse(
-            db.get_drivers_trips(values)
+            db.get_filter_trips(values, db.get_drivers_future_trips(db.filter_trips(values)))
         )
     except Exception as err:
         return HttpResponseServerError(f'Something goes wrong: {err}')

@@ -12,6 +12,7 @@ class Trips(models.Model):
     smoke = models.BooleanField(blank=True, default=False)
     animals = models.BooleanField(blank=True, default=False)
     two_places_in_behind = models.BooleanField(blank=True, default=False)
+    conditioner = models.BooleanField(blank=True, default=False)
 
     class Meta:
         managed = True

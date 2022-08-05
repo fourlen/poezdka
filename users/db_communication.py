@@ -81,8 +81,9 @@ def get_user_as_json(user) -> dict:
     }
 
 
-def get_user_for_trip(user) -> dict:
+def get_user_for_trip(user: Users) -> dict:
     return {
+        "id": user.id,
         "phone": user.login if utils.is_phone_number(user.login) else None,
         "firstname": user.first_name,
         "lastname": user.last_name,
