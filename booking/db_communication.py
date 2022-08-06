@@ -4,7 +4,7 @@ from trips import db_communication as trips_db
 from booking.exceptions import *
 
 
-def book(token, id_) -> int:
+def book(token, id_, seat) -> int:
     trip = trips_db.get_target_trip(id=id_)
     if not trips_db.is_exists(id_):
         raise NotExistException
@@ -13,9 +13,12 @@ def book(token, id_) -> int:
         raise AlreadyInTripException
     if user in get_banned_users(id_):
         raise BannedUserException
+    if seat in get_taken_seats(trips_db.get_target_trip(id=id_)):
+        raise SeatIsTakenException
     booking = Booking(
         owner=users_db.get_user(token=token),
-        trip=trip
+        trip=trip,
+        seat=seat
     )
     booking.save()
     return booking.id
@@ -37,6 +40,20 @@ def get_passengers(id_: int):
     return [
         i.owner for i in Booking.objects.filter(trip_id=id_).all()
     ]
+
+
+def get_user_seat(user, trip):
+    if user not in get_passengers(trip.id):
+        raise NotInTripException
+    return get_booking(owner=user).seat
+
+
+def get_taken_seats(trip):
+    return list(
+        map(
+            lambda x: get_user_seat(x, trip), get_passengers(trip.id)
+        )
+    )
 
 
 def get_banned_users(id_: int):

@@ -9,11 +9,11 @@ def add_car(values: dict, token: str):
         model=values["model"],
         color=values["color"],
         vehicle_number=values["vehicle_number"],
-        count_of_passengers=values["count_of_passengers"],
     )
     try:
-        car.conditioner = values["conditioner"]
-    except TypeError:
+        if values["count_of_passengers"]:
+            car.count_of_passengers = values["count_of_passengers"]
+    except KeyError:
         pass
     car.save()
 

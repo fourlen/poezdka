@@ -7,7 +7,7 @@ from booking.exceptions import *
 
 
 @csrf_exempt
-def book(request: HttpRequest, id_: int):
+def book(request: HttpRequest, id_: int, seat: int):
     try:
         if request.method != 'POST':
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
@@ -15,16 +15,10 @@ def book(request: HttpRequest, id_: int):
         return JsonResponse(
             {"success": True,
              "status": "You are successfully book",
-             "booking_id": db.book(token, id_)}
+             "booking_id": db.book(token, id_, seat)}
         )
-    except AlreadyInTripException:
-        return HttpResponseServerError('You are already in trip')
     except IntegrityError:
         return HttpResponseServerError('You are not authorized')
-    except NotExistException:
-        return HttpResponseServerError('Trip does not exist')
-    except BannedUserException:
-        return HttpResponseServerError('You were cancel this trip yet')
     except Exception as ex:
         return HttpResponseServerError(f'Something goes wrong: {ex}')
 

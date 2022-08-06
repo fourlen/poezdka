@@ -3,12 +3,6 @@ import json
 from django.http import HttpRequest, HttpResponseServerError, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 import trips.db_communication as db
-from chat.consumers import ChatConsumer
-import asyncio
-from loguru import logger
-
-
-cc = ChatConsumer()
 
 
 @csrf_exempt
@@ -49,7 +43,6 @@ def delete_trip(request: HttpRequest, id_: int):
                 }
             )
     except Exception as ex:
-        logger.exception(ex)
         return HttpResponseBadRequest(ex)
 
 
@@ -112,7 +105,7 @@ def main_trips(request: HttpRequest):
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
         return JsonResponse(
-            db.get_main_trips(values)
+            db.get_filter_trips(values, db.get_main_future_trips(db.filter_trips(values)))
         )
     except Exception as err:
         return HttpResponseServerError(f'Something goes wrong: {err}')
@@ -125,7 +118,7 @@ def main_drivers_trips(request: HttpRequest):
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         values = json.loads(request.body)
         return JsonResponse(
-            db.get_drivers_trips(values)
+            db.get_filter_trips(values, db.get_drivers_future_trips(db.filter_trips(values)))
         )
     except Exception as err:
         return HttpResponseServerError(f'Something goes wrong: {err}')
