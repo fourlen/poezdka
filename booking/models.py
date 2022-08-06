@@ -18,3 +18,4 @@ class BannedUsers(models.Model):
     class Meta:
         managed = True
         db_table = 'banned_users'
+        verbose_name = 'Banned user'

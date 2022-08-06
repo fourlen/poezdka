@@ -18,12 +18,11 @@ class Trips(models.Model):
     class Meta:
         managed = True
         db_table = 'trips'
+        verbose_name = 'Trip'
 
 
-class TripsBooking(models.Model):
-    user = models.ForeignKey('users.Users', on_delete=models.CASCADE, blank=True, null=True)
-    trip = models.ForeignKey('trips.Trips', on_delete=models.CASCADE, blank=True, null=True)
-
+    def __str__(self):
+        return f'Trip #{self.id}'
 
 class Departure(models.Model):
     trip = models.ForeignKey('trips.Trips', on_delete=models.CASCADE, blank=False, null=False)
@@ -53,3 +52,4 @@ class Stops(models.Model):
     class Meta:
         managed = True
         db_table = 'stops'
+        verbose_name = 'Stop'

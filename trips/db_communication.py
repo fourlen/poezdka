@@ -309,7 +309,7 @@ def get_filter_trips(values: dict, all_trips):
         }
 
 
-def get_packet(trips: list[Trips], i):
+def get_packet(trips, i):
     return trips[i * 10: (i + 1) * 10]
 
 

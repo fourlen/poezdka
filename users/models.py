@@ -14,6 +14,7 @@ class Users(models.Model):
     class Meta:
         managed = True
         db_table = 'users'
+        verbose_name = 'User'
 
 
     def __str__(self):
