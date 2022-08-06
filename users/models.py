@@ -13,3 +13,7 @@ class Users(models.Model):
     class Meta:
         managed = True
         db_table = 'users'
+
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"

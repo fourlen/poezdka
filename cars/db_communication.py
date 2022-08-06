@@ -1,10 +1,8 @@
 from cars.models import Auto
 import users.db_communication as users_db
-from django.core import serializers
-import json
 
 
-def add_car(values, token: str):
+def add_car(values: dict, token: str):
     car = Auto(
         owner=users_db.get_user(token=token),
         mark=values["mark"],
@@ -13,6 +11,10 @@ def add_car(values, token: str):
         vehicle_number=values["vehicle_number"],
         count_of_passengers=values["count_of_passengers"],
     )
+    try:
+        car.conditioner = values["conditioner"]
+    except TypeError:
+        pass
     car.save()
 
 
@@ -35,13 +37,16 @@ def get_all_cars(token):
 
 
 def get_all_cars_as_json(token):
-    return [{
-            'pk': car.id,
-            'owner': car.owner.id,
-            'mark': car.mark,
-            'model': car.model,
-            'color': car.color,
-            'vehicle_number': car.vehicle_number,
-            'count_of_passengers': car.count_of_passengers
-        } for car in get_all_cars(token)]
-    # return json.loads(serializers.serialize("json", get_all_cars(token)))
+    return [get_car_as_json(car) for car in get_all_cars(token)]
+
+
+def get_car_as_json(car):
+    return {
+        'pk': car.id,
+        'owner': car.owner.id,
+        'mark': car.mark,
+        'model': car.model,
+        'color': car.color,
+        'vehicle_number': car.vehicle_number,
+        'count_of_passengers': car.count_of_passengers
+    }
