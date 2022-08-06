@@ -1,7 +1,13 @@
+import base64
+
+from django.core.files.base import ContentFile
+
+from trips.models import Trips
 from .models import Users
 import hashlib
 from users import utils
 import cars.db_communication as cars_db
+import booking.db_communication as booking_db
 
 
 def add_user(values: dict, token=None) -> str:
@@ -73,6 +79,7 @@ def get_user_as_json(user) -> dict:
     return {
         "token": user.token,
         "login": user.login,
+        "photo": get_photo(user),
         "firstname": user.first_name,
         "lastname": user.last_name,
         "gender": user.gender,
@@ -81,10 +88,28 @@ def get_user_as_json(user) -> dict:
     }
 
 
-def get_user_for_trip(user: Users) -> dict:
+def get_user_for_trip(user: Users, trip=None) -> dict:
     return {
         "id": user.id,
+        "photo": get_photo(user),
         "phone": user.login if utils.is_phone_number(user.login) else None,
         "firstname": user.first_name,
         "lastname": user.last_name,
+        "seat": booking_db.get_user_seat(user, trip) if trip else "owner"
     }
+
+
+def change_photo(user: Users, photo: str):
+    if photo:
+        format, imgstr = photo.split(';base64,')
+        ext = format.split('/')[-1]
+        data = ContentFile(base64.b64decode(imgstr), name=f'{user.login}_ava.{ext}')
+        user.photo = data
+    else:
+        user.photo = None
+    user.save()
+    return user.photo
+
+
+def get_photo(user: Users):
+    return user.photo.url if user.photo else None

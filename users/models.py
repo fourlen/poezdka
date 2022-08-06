@@ -9,6 +9,7 @@ class Users(models.Model):
     last_name = models.CharField(max_length=500, blank=True, null=True)
     gender = models.CharField(max_length=100, blank=True, null=True)
     birth = models.IntegerField(blank=True, null=True)
+    photo = models.ImageField(null=True, blank=True, upload_to="media/")
 
     class Meta:
         managed = True

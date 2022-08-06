@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -147,6 +147,11 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
 
 SOCIAL_AUTH_VK_OAUTH2_KEY = '8209153'
 SOCIAL_AUTH_VK_OAUTH2_SECRET = 'Io5jnSFacaiC4MyE8ZZw'
+
+
+MEDIA_URL = ''
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 LANGUAGE_CODE = 'en-us'

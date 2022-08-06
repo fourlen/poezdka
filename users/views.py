@@ -164,3 +164,21 @@ def update_user(request: HttpRequest):
         )
     except Exception as err:
         return HttpResponseServerError(f'Something goes wrong: {err}')
+
+
+@csrf_exempt
+def change_photo(request: HttpRequest):
+    try:
+        if request.method != 'PUT':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
+        token = request.headers.get('Authorization')
+        user = db.get_user(token=token)
+        values = json.loads(request.body)
+        photo = db.change_photo(user, values["photo"])
+        return JsonResponse(
+            {
+                "photo": photo.url if photo else None
+            }
+        )
+    except Exception as ex:
+        return HttpResponseBadRequest(ex)

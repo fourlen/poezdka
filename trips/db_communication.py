@@ -1,9 +1,4 @@
-from django.db.models import QuerySet
-from werkzeug.exceptions import Unauthorized
-
 from trips.models import *
-from django.core import serializers
-import json
 import users.db_communication as users_db
 import cars.db_communication as cars_db
 import booking.db_communication as booking_db
@@ -18,7 +13,7 @@ def get_all_trips():
 def add_trip(values, token):
     user = users_db.get_user(token=token)
     if not user:
-        raise Unauthorized
+        raise Exception("Unauthorized")
     try:
         car = cars_db.get_car(values["car"])
         if car.owner != user:
@@ -61,6 +56,10 @@ def add_trip(values, token):
         pass
     try:
         trip.conditioner = values["conditioner"]
+    except KeyError:
+        pass
+    try:
+        trip.premium = values["premium"]
     except KeyError:
         pass
     trip.save()
@@ -190,6 +189,7 @@ def is_exists(id_):
 
 
 def get_main_future_trips(all_trips):
+    print(all_trips)
     return list(
         filter(
             lambda x: x.start - time.time() > 0 and x.car,
@@ -209,64 +209,89 @@ def get_drivers_future_trips(all_trips):
 
 def filter_trips(values: dict):
     all_trips = get_all_trips()
-    if values["animals"]:
-        all_trips = all_trips.filter(
-            animals=True
-        ).all()
-    if values["package"]:
-        all_trips = all_trips.filter(
-            package=True
-        ).all()
-    if values["baggage"]:
-        all_trips = all_trips.filter(
-            baggage=True
-        ).all()
-    if values["baby_chair"]:
-        all_trips = all_trips.filter(
-            baby_chair=True
-        ).all()
-    if values["smoke"]:
-        all_trips = all_trips.filter(
-            smoke=True
-        ).all()
-    if values["two_places_in_behind"]:
-        all_trips = all_trips.filter(
-            two_places_in_behind=True
-        ).all()
-    if values["conditioner"]:
-        all_trips = all_trips.filter(
-            conditioner=True
-        ).all()
-    if values["owner_gender"]:
-        all_trips = utils.filter_by_gender(all_trips, gender=values["owner_gender"])
+    try:
+        if values["animals"]:
+            all_trips = all_trips.filter(
+                animals=True
+            ).all()
+    except KeyError:
+        pass
+    try:
+        if values["package"]:
+            all_trips = all_trips.filter(
+                package=True
+            ).all()
+    except KeyError:
+        pass
+    try:
+        if values["baggage"]:
+            all_trips = all_trips.filter(
+                baggage=True
+            ).all()
+    except KeyError:
+        pass
+    try:
+        if values["baby_chair"]:
+            all_trips = all_trips.filter(
+                baby_chair=True
+            ).all()
+    except KeyError:
+        pass
+    try:
+        if values["smoke"]:
+            all_trips = all_trips.filter(
+                smoke=True
+            ).all()
+    except KeyError:
+        pass
+    try:
+        if values["two_places_in_behind"]:
+            all_trips = all_trips.filter(
+                two_places_in_behind=True
+            ).all()
+    except KeyError:
+        pass
+    try:
+        if values["conditioner"]:
+            all_trips = all_trips.filter(
+                conditioner=True
+            ).all()
+    except KeyError:
+        pass
+    try:
+        if values["owner_gender"]:
+            all_trips = utils.filter_by_gender(all_trips, gender=values["owner_gender"])
+    except KeyError:
+        pass
     return all_trips
 
 
 def get_filter_trips(values: dict, all_trips):
-    if "departure" not in values or "destination" not in values:
-        return {
-            "all_trips": list(
-                map(
-                    pretty_trip, all_trips
-                )
-            )
-        }
+    copy = []
+    packet = values["packet"] if "packet" in values else 0
     for trip in all_trips:
-        if utils.filter_by_departure(
-                get_departure(trip),
-                values["departure"]
-        ) and utils.filter_by_destination(
-                get_stops(trip),
-                values["destination"]
-        ):
-            all_trips.append(trip)
+        if "departure" in values and not(
+                values["departure"] and
+                utils.filter_by_departure(get_departure(trip), values["departure"])):
+            continue
+        if "destination" in values and not(
+                values["destination"] and
+                utils.filter_by_departure(get_stops(trip), values["destination"])):
+            continue
+        copy.append(trip)
     return {
             "all_trips": list(
                 map(
-                    pretty_trip, all_trips
+                    pretty_trip, get_packet(sorted(
+                        copy, key=lambda x: not x.premium
+                    ), packet)
                 )
             )
         }
+
+
+def get_packet(trips: list[Trips], i):
+    return trips[i * 10: (i + 1) * 10]
 
 
 def get_departure(trip):
@@ -309,6 +334,7 @@ def pretty_trip(trip: Trips):
     departure = get_departure(trip)
     stops = get_stops(trip)
     return {
+        "is_premium": trip.premium,
         "trip_id": trip.id,
         "owner": users_db.get_user_for_trip(trip.owner),
         "car": cars_db.get_car_as_json(
@@ -326,7 +352,7 @@ def pretty_trip(trip: Trips):
         "smoke": trip.smoke,
         "animals": trip.animals,
         "two_places_in_behind": trip.two_places_in_behind,
-        "passengers": [users_db.get_user_for_trip(i) for i in booking_db.get_passengers(trip.id)],
+        "passengers": [users_db.get_user_for_trip(i, trip) for i in booking_db.get_passengers(trip.id)],
         "conditioner": trip.conditioner,
         "owner_gender": trip.owner.gender,
     }
