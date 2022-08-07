@@ -40,9 +40,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Декоратор для работы с БД в асинхронном режиме
     @database_sync_to_async
     # Функция для создания нового сообщения в БД
-    def new_message(self, message):
+    def new_message(self, from_id, to_id, message):
         # Создаём сообщение в БД
-        Message.objects.create(text=message)
+        Message.objects.create(
+            user_from = Users.objects.get(id=from_id),
+            user_to = Users.objects.get(id=to_id),
+            message=message
+        )
 
     
     @database_sync_to_async
@@ -58,7 +62,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         to = text_data_json['to']
         
         # Добавляем сообщение в БД 
-        await self.new_message(message=message)
+        await self.new_message(from_id=int(self.room_name), to_id=int(to), message=message)
         
         # Отправляем сообщение 
         await self.channel_layer.group_send(
