@@ -4,7 +4,6 @@ import views
 
 from . import consumers
 
-websocket_urlpatterns = [
-    re_path(r'/ws/chat/', consumers.ChatConsumer),
+urlpatterns = [
     path('get_chat', views.get_chat)
 ]
