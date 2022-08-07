@@ -23,5 +23,6 @@ urlpatterns = [
     path('', include('social_django.urls', namespace='social')),
     path('get_user', views.get_user),
     path('update_user', views.update_user),
-    path('change_photo', views.change_photo)
+    path('change_photo', views.change_photo),
+    path('review<int:id_>', views.review)
 ]

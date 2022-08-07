@@ -3,14 +3,14 @@ import base64
 from django.core.files.base import ContentFile
 
 from trips.models import Trips
-from .models import Users
+from .models import Users, Review
 import hashlib
 from users import utils
 import cars.db_communication as cars_db
 import booking.db_communication as booking_db
 
 
-def add_user(values: dict, token=None) -> str:
+def add_user(values: dict, token=None) -> tuple:
     if not token:
         token = utils.calculate_token(values['login'])
     user = Users(
@@ -23,7 +23,7 @@ def add_user(values: dict, token=None) -> str:
         birth=values['birth'],
     )
     user.save()
-    return token
+    return token, user
 
 
 def add_oauth_user(values: dict):
@@ -66,9 +66,12 @@ def update_user(values: dict, token: str):
 
 
 def get_user(**kwargs) -> Users:
-    return Users.objects.filter(
+    user = Users.objects.filter(
         **kwargs
     ).first()
+    if 'token' in kwargs and user.is_blocked:
+        raise Exception("Your account has been blocked. Please, contact support")
+    return user
 
 
 def delete_user(token: str) -> None:
@@ -77,6 +80,7 @@ def delete_user(token: str) -> None:
 
 def get_user_as_json(user) -> dict:
     return {
+        "id": user.id,
         "token": user.token,
         "login": user.login,
         "photo": get_photo(user),
@@ -113,3 +117,12 @@ def change_photo(user: Users, photo: str):
 
 def get_photo(user: Users):
     return user.photo.url if user.photo else None
+
+
+def set_review(user, id_, message):
+    review = Review(
+        owner=user,
+        user=get_user(id=id_),
+        message=message
+    )
+    review.save()

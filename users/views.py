@@ -6,6 +6,7 @@ import hashlib
 import json
 
 from loguru import logger
+from rest_framework.decorators import api_view
 
 import users.db_communication as db
 import cars.db_communication as cars_db
@@ -37,9 +38,10 @@ def registration(request: HttpRequest):
             return HttpResponseBadRequest("gender must be male or female")
         if not (utils.is_phone_number(values['login']) or utils.is_email(values['login'])):
             return HttpResponseBadRequest("login must be email or phone number")
-        token = db.add_user(values)
+        token, user = db.add_user(values)
         return JsonResponse({
-            "token": token
+            "token": token,
+            "id": user.id,
         })
     except Exception as err:
         return HttpResponseBadRequest(f"Something goes wrong: {err}")
@@ -76,7 +78,8 @@ def auth(request: HttpRequest):
         if user.password == password:
             return JsonResponse({
                 'authorized': True,
-                'token': user.token
+                'token': user.token,
+                "id": user.id,
             })
         return JsonResponse({
             'authorized': False,
@@ -145,7 +148,7 @@ def get_user(request: HttpRequest):
         )
     except Exception as err:
         logger.error(err)
-        return HttpResponseServerError(f'Something goes wrong: Unauthorized')
+        return HttpResponseServerError(f'Something goes wrong: {err}')
 
 
 @csrf_exempt
@@ -178,6 +181,22 @@ def change_photo(request: HttpRequest):
         return JsonResponse(
             {
                 "photo": photo.url if photo else None
+            }
+        )
+    except Exception as ex:
+        return HttpResponseBadRequest(ex)
+
+
+@api_view(['POST'])
+def review(request: HttpRequest, id_: int) -> HttpResponse:
+    try:
+        token = request.headers.get('Authorization')
+        user = db.get_user(token=token)
+        values = json.loads(request.body)
+        db.set_review(user, id_, values["message"])
+        return JsonResponse(
+            {
+                "status": "The review was successfully left"
             }
         )
     except Exception as ex:

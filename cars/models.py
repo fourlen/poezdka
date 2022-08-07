@@ -6,7 +6,7 @@ class Auto(models.Model):
     mark = models.CharField(max_length=100, blank=True, null=True)
     model = models.CharField(max_length=100, blank=True, null=True)
     color = models.CharField(max_length=100, blank=True, null=True)
-    vehicle_number = models.CharField(max_length=20, blank=True, null=True, unique=True)
+    vehicle_number = models.CharField(max_length=20, blank=True, null=True)
     count_of_passengers = models.IntegerField(blank=True, null=True, default=4)
 
     class Meta:

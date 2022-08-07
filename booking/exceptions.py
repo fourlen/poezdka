@@ -1,6 +1,6 @@
 class AlreadyInTripException(Exception):
     def __str__(self):
-        return "You have already booked this trip"
+        return "You have already booked this trip, because you are driver"
 
 
 class NotExistException(Exception):

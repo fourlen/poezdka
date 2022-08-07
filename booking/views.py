@@ -1,21 +1,23 @@
+import json
+
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponseServerError, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 import booking.db_communication as db
 from booking.exceptions import *
-from booking.exceptions import *
 
 
 @csrf_exempt
-def book(request: HttpRequest, id_: int, seat: int):
+def book(request: HttpRequest, id_: int):
     try:
         if request.method != 'POST':
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         token = request.headers.get('Authorization')
+        values = json.loads(request.body)
         return JsonResponse(
             {"success": True,
              "status": "You are successfully book",
-             "booking_id": db.book(token, id_, seat)}
+             "booking_id": db.book(token, id_, values["seats"])}
         )
     except IntegrityError:
         return HttpResponseServerError('You are not authorized')

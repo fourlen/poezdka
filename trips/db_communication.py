@@ -5,11 +5,9 @@ import booking.db_communication as booking_db
 import time
 import trips.utils as utils
 import asyncio
-# from chat.routing import cc
 from channels.layers import get_channel_layer
 
 channel_layer = get_channel_layer()
-
 
 
 def get_all_trips():
@@ -353,7 +351,7 @@ def pretty_trip(trip: Trips):
     departure = get_departure(trip)
     stops = get_stops(trip)
     return {
-        "is_premium": trip.premium,
+        "premium": trip.premium,
         "trip_id": trip.id,
         "owner": users_db.get_user_for_trip(trip.owner),
         "car": cars_db.get_car_as_json(
