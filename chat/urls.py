@@ -1,6 +1,6 @@
 from django.urls import re_path
 from django.urls import path
-import views
+import chat.views as views
 
 from . import consumers
 

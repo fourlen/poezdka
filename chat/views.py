@@ -1,6 +1,6 @@
 from django.http import HttpRequest, JsonResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
-import db_communication
+import chat.db_communication as db_communication
 from loguru import logger
 
 
