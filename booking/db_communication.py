@@ -36,6 +36,7 @@ def cancel_booking(token: str, id_: int):
     if flag:
         ban_user(user, booking)
         booking.delete()
+    asyncio.run(trips_db.notify(booking.owner.id, 'cancel booking'))
     return flag
 
 
