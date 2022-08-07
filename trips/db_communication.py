@@ -119,7 +119,7 @@ def delete_trip(token: str, id_: int):
     flag = trip.owner == user
     if flag:
         for passanger in booking_db.get_passengers(trip.id):
-            asyncio.run(notify(passanger.id, 'хуй'))
+            asyncio.run(notify(passanger.id, 'trip deleted'))
         trip.delete()
     return flag
 

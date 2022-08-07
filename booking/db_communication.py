@@ -2,6 +2,7 @@ from booking.models import *
 from users import db_communication as users_db
 from trips import db_communication as trips_db
 from booking.exceptions import *
+import asyncio
 
 
 def book(token, id_, seat) -> int:
@@ -15,11 +16,13 @@ def book(token, id_, seat) -> int:
         raise BannedUserException
     if seat in get_taken_seats(trips_db.get_target_trip(id=id_)):
         raise SeatIsTakenException
+    owner = users_db.get_user(token=token)
     booking = Booking(
-        owner=users_db.get_user(token=token),
+        owner=owner,
         trip=trip,
         seat=seat
     )
+    asyncio.run(trips_db.notify(owner.id, 'new booking'))
     booking.save()
     return booking.id
 
