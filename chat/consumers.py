@@ -7,6 +7,7 @@ from channels.db import database_sync_to_async
 # Импорт модели сообщений
 from .models import Message
 from users.models import Users
+from loguru import logger
  
  
 # Класс ChatConsumer
@@ -15,8 +16,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Метод подключения к WS
     async def connect(self):
         # Назначим пользователя в комнату
-        self.room_name = self.scope['path'].split('/')[-1]
+        token = self.scope['path'].split('/')[-1]
+        user = await self.get_user(token)
+        self.room_name = user.id
         self.room_group_name = 'chat_%s' % self.room_name
+        logger.info(f'Created new room: {self.room_name}')
         # Добавляем новую комнату
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -39,6 +43,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def new_message(self, message):
         # Создаём сообщение в БД
         Message.objects.create(text=message)
+
+    
+    @database_sync_to_async
+    def get_user(self, token):
+        return Users.objects.get(token=token)
  
     # Принимаем сообщение от пользователя
     async def receive(self, text_data=None, bytes_data=None):
@@ -70,3 +79,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'from': event['from'],
             'message': message,
         }, ensure_ascii=False))
+
+
+    async def notify(self, reciever_id, message):
+        await self.channel_layer.group_send(
+            'chat_' + reciever_id,
+            {
+                'type': 'notification',
+                'from': self.room_name,
+                'message': message,
+            }
+        )

@@ -12,3 +12,8 @@ class Auto(models.Model):
     class Meta:
         managed = True
         db_table = 'cars'
+        verbose_name = 'Car'
+
+
+    def __str__(self):
+        return f'{self.mark} {self.model}, {self.vehicle_number}'

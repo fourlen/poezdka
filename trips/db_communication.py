@@ -4,6 +4,12 @@ import cars.db_communication as cars_db
 import booking.db_communication as booking_db
 import time
 import trips.utils as utils
+import asyncio
+# from chat.routing import cc
+from channels.layers import get_channel_layer
+
+channel_layer = get_channel_layer()
+
 
 
 def get_all_trips():
@@ -96,11 +102,24 @@ def add_stop(stop: dict, trip: Trips):
     stop.save()
 
 
+async def notify(reciever_id, message):
+        await channel_layer.group_send(
+            'chat_' + str(reciever_id),
+            {
+                'type': 'chat_message',
+                'from': 'BAZA',
+                'message': message,
+            }
+        )
+
+
 def delete_trip(token: str, id_: int):
     user = users_db.get_user(token=token)
     trip = get_target_trip(id=id_)
     flag = trip.owner == user
     if flag:
+        for passanger in booking_db.get_passengers(trip.id):
+            asyncio.run(notify(passanger.id, 'хуй'))
         trip.delete()
     return flag
 
@@ -290,7 +309,7 @@ def get_filter_trips(values: dict, all_trips):
         }
 
 
-def get_packet(trips: list[Trips], i):
+def get_packet(trips, i):
     return trips[i * 10: (i + 1) * 10]
 
 
