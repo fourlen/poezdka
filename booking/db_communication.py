@@ -2,6 +2,7 @@ from booking.models import *
 from users import db_communication as users_db
 from trips import db_communication as trips_db
 from booking.exceptions import *
+import asyncio
 
 
 def book(token, id_, seats) -> int:
@@ -21,6 +22,7 @@ def book(token, id_, seats) -> int:
         trip=trip
     )
     booking.set_seat(seats)
+    asyncio.run(trips_db.notify(owner.id, 'new booking'))
     booking.save()
     return booking.id
 
@@ -34,6 +36,7 @@ def cancel_booking(token: str, id_: int):
     if flag:
         ban_user(user, booking)
         booking.delete()
+    asyncio.run(trips_db.notify(booking.owner.id, 'cancel booking'))
     return flag
 
 
