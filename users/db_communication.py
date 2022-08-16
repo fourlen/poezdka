@@ -50,8 +50,8 @@ def update_user(values: dict, token: str):
     user = get_user(
         token=token
     )
-    user.firstname = values['firstname']
-    user.lastname = values['lastname']
+    user.first_name = values['firstname']
+    user.last_name = values['lastname']
     user.gender = values['gender']
     user.birth = values['birth']
     user.save()
@@ -69,7 +69,7 @@ def get_user(**kwargs) -> Users:
     user = Users.objects.filter(
         **kwargs
     ).first()
-    if 'token' in kwargs and user.is_blocked:
+    if 'token' in kwargs and not user.is_active:
         raise Exception("Your account has been blocked. Please, contact support")
     return user
 
@@ -119,10 +119,43 @@ def get_photo(user: Users):
     return user.photo.url if user.photo else None
 
 
-def set_review(user, id_, message):
+def set_review(user, id_, message, mark):
+    if mark not in [1, 2, 3, 4, 5]:
+        raise Exception("Incorrect_mark")
     review = Review(
         owner=user,
         user=get_user(id=id_),
-        message=message
+        message=message,
+        mark=mark
     )
     review.save()
+
+
+def get_json_review(review: Review):
+    return {
+        "from": get_user_for_review(review.owner),
+        "message": review.message,
+        "mark": review.mark,
+        "date": review.date
+    }
+
+
+def get_user_for_review(user: Users) -> dict:
+    return {
+        "id": user.id,
+        "photo": get_photo(user),
+        "firstname": user.first_name,
+        "lastname": user.last_name,
+    }
+
+
+def get_my_reviews(token):
+    all_reviews = Review.objects.filter(user=get_user(token=token)).all()
+    return {
+        "average": utils.count_average(all_reviews),
+        "reviews": list(
+            map(
+                get_json_review, all_reviews
+            )
+        )
+    }

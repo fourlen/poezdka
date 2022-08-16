@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Users, Review
 
-all_fields = ('login', 'id', 'is_blocked', 'first_name', 'last_name', 'gender', 'birth', 'photo', 'token')
+all_fields = ('login', 'id', 'is_active', 'first_name', 'last_name', 'gender', 'birth', 'photo', 'token')
 
 
 @admin.register(Users)
@@ -12,5 +12,5 @@ class UsersAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class UsersReview(admin.ModelAdmin):
-    list_display = ('owner', 'user', 'message')
+    list_display = ('owner', 'user', 'message', 'mark', 'date')
     search_fields = ['user']

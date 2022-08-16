@@ -8,11 +8,6 @@ class NotExistException(Exception):
         return "Trip not found"
 
 
-class BannedUserException(Exception):
-    def __str__(self):
-        return "You were forbidden to book this trip"
-
-
 class NotInTripException(Exception):
     def __str__(self):
         return "The user was not found among the participants of the trip"

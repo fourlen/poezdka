@@ -24,5 +24,6 @@ urlpatterns = [
     path('get_user', views.get_user),
     path('update_user', views.update_user),
     path('change_photo', views.change_photo),
-    path('review<int:id_>', views.review)
+    path('review<int:id_>', views.review),
+    path('get_reviews', views.get_reviews)
 ]

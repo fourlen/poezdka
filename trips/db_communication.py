@@ -92,7 +92,7 @@ def add_stop(stop: dict, trip: Trips):
         lon=stop["coords"]["lon"],
         district=stop["district"],
         name=stop["name"],
-        distance_to_previous=stop["distance_by_past"],
+        distance_to_previous=stop["distance_to_previous"],
         population=stop["population"],
         subject=stop["subject"],
         time=stop["time"],
@@ -130,12 +130,13 @@ def get_target_trip(**kwargs) -> Trips:
 
 def get_trips(token):
     user = users_db.get_user(token=token)
-    return list(
+    list_ = list(
         filter(
-            lambda x: time.time() - x.start < 0,
+            lambda x: (x.start - time.time() * 1000000 > 0),
             Trips.objects.filter(owner=user).all()
         )
     )
+    return list_
 
 
 def get_trips_as_json(token):
@@ -148,7 +149,7 @@ def get_past_trips(token):
     user = users_db.get_user(token=token)
     return list(
         filter(
-            lambda x: time.time() - x.start > 0,
+            lambda x: time.time() * 1000000 - x.start > 0,
             Trips.objects.filter(owner=user).all()
         )
     )
@@ -169,7 +170,7 @@ def get_booked_trips(token):
     all_booking = get_all_booking(token)
     return list(
         filter(
-            lambda x: time.time() - x.start < 0,
+            lambda x: x.start - time.time() * 1000000 > 0,
             [Trips.objects.get(id=i.trip_id) for i in all_booking]
         )
     )
@@ -185,7 +186,7 @@ def get_past_booked_trips(token):
     all_booking = get_all_booking(token)
     return list(
         filter(
-            lambda x: time.time() - x.start > 0,
+            lambda x: time.time() * 1000000 - x.start > 0,
             [Trips.objects.get(id=i.trip_id) for i in all_booking]
         )
     )
@@ -209,7 +210,7 @@ def get_main_future_trips(all_trips):
     print(all_trips)
     return list(
         filter(
-            lambda x: x.start - time.time() > 0 and x.car,
+            lambda x: x.start - time.time() * 1000000 > 0 and x.car,
             all_trips
         )
     )
@@ -218,7 +219,7 @@ def get_main_future_trips(all_trips):
 def get_drivers_future_trips(all_trips):
     return list(
         filter(
-            lambda x: x.start - time.time() > 0 and not x.car,
+            lambda x: x.start - time.time() * 1000000 > 0 and not x.car,
             all_trips
         )
     )
@@ -293,7 +294,7 @@ def get_filter_trips(values: dict, all_trips):
             continue
         if "destination" in values and not(
                 values["destination"] and
-                utils.filter_by_departure(get_stops(trip), values["destination"])):
+                utils.filter_by_destination(get_stops(trip), values["destination"])):
             continue
         copy.append(trip)
     return {

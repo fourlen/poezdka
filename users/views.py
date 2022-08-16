@@ -160,8 +160,6 @@ def update_user(request: HttpRequest):
         values = json.loads(request.body)
         if not utils.check_gender(values['gender']):
             return HttpResponseBadRequest("gender must be male or female")
-        if not values['birth'].isdigit():
-            return HttpResponseBadRequest("birth must be integer")
         return JsonResponse(
             db.update_user(values, token)
         )
@@ -193,11 +191,21 @@ def review(request: HttpRequest, id_: int) -> HttpResponse:
         token = request.headers.get('Authorization')
         user = db.get_user(token=token)
         values = json.loads(request.body)
-        db.set_review(user, id_, values["message"])
+        db.set_review(user, id_, values["message"], values["mark"])
         return JsonResponse(
             {
                 "status": "The review was successfully left"
             }
         )
     except Exception as ex:
-        return HttpResponseBadRequest(ex)
+        return HttpResponseServerError(f'Something goes wrong: {ex}')
+
+
+@api_view(['GET'])
+def get_reviews(request: HttpRequest) -> HttpResponse:
+    try:
+        token = request.headers.get('Authorization')
+        return JsonResponse(db.get_my_reviews(token))
+    except Exception as ex:
+        return HttpResponseServerError(f'Something goes wrong: {ex}')
+

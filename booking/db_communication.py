@@ -12,8 +12,6 @@ def book(token, id_, seats) -> int:
     user = users_db.get_user(token=token)
     if trip.owner == user:
         raise AlreadyInTripException
-    if user in get_banned_users(id_):
-        raise BannedUserException
     for seat in seats:
         if seat in get_taken_seats(trips_db.get_target_trip(id=id_)):
             raise SeatIsTakenException
@@ -22,19 +20,18 @@ def book(token, id_, seats) -> int:
         trip=trip
     )
     booking.set_seat(seats)
-    asyncio.run(trips_db.notify(owner.id, 'new booking'))
+    asyncio.run(trips_db.notify(trip.owner.id, 'new booking'))
     booking.save()
     return booking.id
 
 
 def cancel_booking(token: str, id_: int):
     user = users_db.get_user(token=token)
-    booking = get_booking(id=id_)
+    booking = Booking.objects.get(owner=user, trip=trips_db.get_target_trip(id=id_))
     if not booking:
         raise NotExistException
     flag = booking.owner == user
     if flag:
-        ban_user(user, booking)
         booking.delete()
     asyncio.run(trips_db.notify(booking.owner.id, 'cancel booking'))
     return flag
@@ -66,12 +63,6 @@ def get_taken_seats(trip):
     return taken
 
 
-def get_banned_users(id_: int):
-    return [
-        i.user for i in BannedUsers.objects.filter(trip_id=id_).all()
-    ]
-
-
 def get_booking(**kwargs) -> Booking:
     return Booking.objects.filter(
         **kwargs
@@ -82,11 +73,3 @@ def get_all_booking(owner):
     return Booking.objects.filter(
         owner=owner
     ).all()
-
-
-def ban_user(user, booking: Booking):
-    ban = BannedUsers(
-        user=user,
-        trip=trips_db.get_target_trip(id=booking.trip_id)
-    )
-    ban.save()

@@ -21,3 +21,10 @@ def calculate_token(login: str):
             'login': login,
             'timestamp': str(time())
         }, key=SECRET_KEY)
+
+
+def count_average(reviews):
+    sum_ = 0
+    for i in reviews:
+        sum_ += i.mark
+    return sum_ / len(reviews) if len(reviews) != 0 else 0
