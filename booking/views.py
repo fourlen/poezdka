@@ -1,7 +1,7 @@
 import json
 
 from django.db.utils import IntegrityError
-from django.http import HttpRequest, HttpResponseServerError, JsonResponse, HttpResponseBadRequest
+from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 import booking.db_communication as db
 from booking.exceptions import *
@@ -20,9 +20,9 @@ def book(request: HttpRequest, id_: int):
              "booking_id": db.book(token, id_, values["seats"])}
         )
     except IntegrityError:
-        return HttpResponseServerError('You are not authorized')
+        return HttpResponseBadRequest('You are not authorized')
     except Exception as ex:
-        return HttpResponseServerError(f'Something goes wrong: {ex}')
+        return HttpResponseBadRequest(f'Something goes wrong: {ex}')
 
 
 @csrf_exempt
@@ -47,6 +47,6 @@ def cancel_booking(request: HttpRequest, id_: int):
                 }
             )
     except NotExistException:
-        return HttpResponseServerError('Booking does not exist')
+        return HttpResponseBadRequest('Booking does not exist')
     except Exception as ex:
-        return HttpResponseServerError(f'Something goes wrong: {ex}')
+        return HttpResponseBadRequest(f'Something goes wrong: {ex}')

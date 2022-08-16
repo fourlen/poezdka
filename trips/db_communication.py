@@ -101,14 +101,14 @@ def add_stop(stop: dict, trip: Trips):
 
 
 async def notify(reciever_id, message):
-        await channel_layer.group_send(
-            'chat_' + str(reciever_id),
-            {
-                'type': 'chat_message',
-                'from': 'BAZA',
-                'message': message,
-            }
-        )
+    await channel_layer.group_send(
+        'chat_' + str(reciever_id),
+        {
+            'type': 'chat_message',
+            'from': 'BAZA',
+            'message': message,
+        }
+    )
 
 
 def delete_trip(token: str, id_: int):
@@ -129,13 +129,19 @@ def get_target_trip(**kwargs) -> Trips:
 
 
 def get_trips(token):
+    all_booking = get_all_booking(token)
     user = users_db.get_user(token=token)
     list_ = list(
         filter(
-            lambda x: (x.start - time.time() * 1000000 > 0),
-            Trips.objects.filter(owner=user).all()
+            lambda x: (x.start - time.time() * 1000000 > 0) and x.car,
+            list(Trips.objects.filter(owner=user).all())
         )
-    )
+    ) + list(
+            filter(
+                lambda x: x.start - time.time() * 1000000 > 0 and not x.car,
+                [Trips.objects.get(id=i.trip_id) for i in all_booking]
+            )
+        )
     return list_
 
 
@@ -146,13 +152,20 @@ def get_trips_as_json(token):
 
 
 def get_past_trips(token):
+    all_booking = get_all_booking(token)
     user = users_db.get_user(token=token)
-    return list(
+    list_ = list(
         filter(
-            lambda x: time.time() * 1000000 - x.start > 0,
-            Trips.objects.filter(owner=user).all()
+            lambda x: (x.start - time.time() * 1000000 < 0) and x.car,
+            list(Trips.objects.filter(owner=user).all())
         )
-    )
+    ) + list(
+            filter(
+                lambda x: x.start - time.time() * 1000000 < 0 and not x.car,
+                [Trips.objects.get(id=i.trip_id) for i in all_booking]
+            )
+        )
+    return list_
 
 
 def get_past_trips_as_json(token):
@@ -168,12 +181,19 @@ def get_all_booking(token):
 
 def get_booked_trips(token):
     all_booking = get_all_booking(token)
-    return list(
+    user = users_db.get_user(token=token)
+    list_ = list(
         filter(
-            lambda x: x.start - time.time() * 1000000 > 0,
-            [Trips.objects.get(id=i.trip_id) for i in all_booking]
+            lambda x: (x.start - time.time() * 1000000 > 0) and not x.car,
+            list(Trips.objects.filter(owner=user).all())
         )
-    )
+    ) + list(
+            filter(
+                lambda x: x.start - time.time() * 1000000 > 0 and x.car,
+                [Trips.objects.get(id=i.trip_id) for i in all_booking]
+            )
+        )
+    return list_
 
 
 def get_booked_trips_as_json(token):
@@ -184,12 +204,19 @@ def get_booked_trips_as_json(token):
 
 def get_past_booked_trips(token):
     all_booking = get_all_booking(token)
-    return list(
+    user = users_db.get_user(token=token)
+    list_ = list(
         filter(
-            lambda x: time.time() * 1000000 - x.start > 0,
-            [Trips.objects.get(id=i.trip_id) for i in all_booking]
+            lambda x: (x.start - time.time() * 1000000 < 0) and not x.car,
+            list(Trips.objects.filter(owner=user).all())
         )
-    )
+    ) + list(
+            filter(
+                lambda x: x.start - time.time() * 1000000 < 0 and x.car,
+                [Trips.objects.get(id=i.trip_id) for i in all_booking]
+            )
+        )
+    return list_
 
 
 def get_past_booked_trips_as_json(token):
@@ -288,24 +315,24 @@ def get_filter_trips(values: dict, all_trips):
     copy = []
     packet = values["packet"] if "packet" in values else 0
     for trip in all_trips:
-        if "departure" in values and not(
+        if "departure" in values and not (
                 values["departure"] and
                 utils.filter_by_departure(get_departure(trip), values["departure"])):
             continue
-        if "destination" in values and not(
+        if "destination" in values and not (
                 values["destination"] and
                 utils.filter_by_destination(get_stops(trip), values["destination"])):
             continue
         copy.append(trip)
     return {
-            "all_trips": list(
-                map(
-                    pretty_trip, get_packet(sorted(
-                        copy, key=lambda x: not x.premium
-                    ), packet)
-                )
+        "all_trips": list(
+            map(
+                pretty_trip, get_packet(sorted(
+                    copy, key=lambda x: not x.premium
+                ), packet)
             )
-        }
+        )
+    }
 
 
 def get_packet(trips, i):
@@ -322,29 +349,29 @@ def get_stops(trip):
 
 def pretty_departure(departure: Departure):
     return {
-            "coords": {
-                "lat": departure.lat,
-                "lon": departure.lon,
-            },
-            "district": departure.district,
-            "name": departure.name,
-            "population": departure.population,
-            "subject": departure.subject,
+        "coords": {
+            "lat": departure.lat,
+            "lon": departure.lon,
+        },
+        "district": departure.district,
+        "name": departure.name,
+        "population": departure.population,
+        "subject": departure.subject,
     }
 
 
 def pretty_stop(stop: Stops):
     return {
-            "coords": {
-                "lat": stop.lat,
-                "lon": stop.lon,
-            },
-            "district": stop.district,
-            "name": stop.name,
-            "population": stop.population,
-            "subject": stop.subject,
-            "approach_time": stop.time,
-            "distance_to_previous": stop.distance_to_previous
+        "coords": {
+            "lat": stop.lat,
+            "lon": stop.lon,
+        },
+        "district": stop.district,
+        "name": stop.name,
+        "population": stop.population,
+        "subject": stop.subject,
+        "approach_time": stop.time,
+        "distance_to_previous": stop.distance_to_previous
     }
 
 
