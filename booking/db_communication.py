@@ -20,7 +20,8 @@ def book(token, id_, seats) -> int:
         trip=trip
     )
     booking.set_seat(seats)
-    asyncio.run(trips_db.notify(trip.owner.id, 'new booking'))
+
+    # asyncio.run(trips_db.notify(trip.owner.id, 'new booking'))
     booking.save()
     return booking.id
 
@@ -38,9 +39,9 @@ def cancel_booking(token: str, id_: int):
 
 
 def get_passengers(id_: int):
-    return [
+    return list(set([
         i.owner for i in Booking.objects.filter(trip_id=id_).all()
-    ]
+    ]))
 
 
 def get_passengers_and_bookings(id_: int):
@@ -50,11 +51,14 @@ def get_passengers_and_bookings(id_: int):
 
 
 def get_user_seat(user, trip):
+    list_ = []
     for i in get_passengers_and_bookings(trip.id):
         if i[0] == user:
-            return get_booking(id=i[1]).get_seat()
-    raise NotInTripException
-
+            list_.extend(get_booking(id=i[1]).get_seat())
+    if list_:
+        return list_
+    else:
+        raise NotInTripException
 
 def get_taken_seats(trip):
     taken = []

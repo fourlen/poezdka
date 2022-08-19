@@ -43,9 +43,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def new_message(self, from_id, to_id, message):
         # Создаём сообщение в БД
         Message.objects.create(
-            user_from = Users.objects.get(id=from_id),
-            user_to = Users.objects.get(id=to_id),
-            message=message
+            from_user = Users.objects.get(id=from_id),
+            to_user = Users.objects.get(id=to_id),
+            text=message
         )
 
     
@@ -56,6 +56,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Принимаем сообщение от пользователя
     async def receive(self, text_data=None, bytes_data=None):
         # Форматируем сообщение из JSON
+        logger.debug(text_data)
         text_data_json = json.loads(text_data)
         # Получаем текст сообщения
         message = text_data_json['message']

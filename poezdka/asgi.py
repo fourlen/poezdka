@@ -16,7 +16,7 @@ import chat.routing
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'poezdka.settings')
-
+django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),

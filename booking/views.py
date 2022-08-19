@@ -1,7 +1,7 @@
 import json
 
 from django.db.utils import IntegrityError
-from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest
+from django.http import HttpRequest, HttpResponseServerError, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 import booking.db_communication as db
 from booking.exceptions import *
