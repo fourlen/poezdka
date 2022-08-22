@@ -56,20 +56,17 @@ def get_trips(request: HttpRequest):
             "trips": db.get_trips_as_json(token)
         })
     except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
+        return HttpResponseBadRequest(f'Something goes wrong: {err}')
 
 
 @csrf_exempt
 def get_past_trips(request: HttpRequest):
-    try:
         if request.method != 'GET':
             return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
         token = request.headers.get('Authorization')
         return JsonResponse({
             "trips": db.get_past_trips_as_json(token)
         })
-    except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
 
 
 @csrf_exempt
@@ -82,7 +79,7 @@ def get_booked_trips(request: HttpRequest):
             "trips": db.get_booked_trips_as_json(token)
         })
     except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
+        return HttpResponseBadRequest(f'Something goes wrong: {err}')
 
 
 @csrf_exempt
@@ -95,7 +92,7 @@ def get_past_booked_trips(request: HttpRequest):
             "trips": db.get_past_booked_trips_as_json(token)
         })
     except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
+        return HttpResponseBadRequest(f'Something goes wrong: {err}')
 
 
 @csrf_exempt
@@ -108,7 +105,7 @@ def main_trips(request: HttpRequest):
             db.get_filter_trips(values, db.get_main_future_trips(db.filter_trips(values)))
         )
     except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
+        return HttpResponseBadRequest(f'Something goes wrong: {err}')
 
 
 @csrf_exempt
@@ -121,4 +118,4 @@ def main_drivers_trips(request: HttpRequest):
             db.get_filter_trips(values, db.get_drivers_future_trips(db.filter_trips(values)))
         )
     except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
+        return HttpResponseBadRequest(f'Something goes wrong: {err}')

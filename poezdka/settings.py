@@ -90,10 +90,8 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-LOGIN_URL = '/auth/login/google-oauth2/'
-
-LOGIN_REDIRECT_URL = '/users/get_user'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/users/oauth_user'
+LOGOUT_REDIRECT_URL = '/admin/'
 
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
@@ -152,6 +150,14 @@ SOCIAL_AUTH_VK_OAUTH2_SECRET = 'Io5jnSFacaiC4MyE8ZZw'
 MEDIA_URL = ''
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "poezdka.org@gmail.com"
+EMAIL_HOST_PASSWORD = "vpkcuukynuzkbbfr"
 
 
 LANGUAGE_CODE = 'ru-ru'

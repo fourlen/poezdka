@@ -9,18 +9,20 @@ def book(token, id_, seats) -> int:
     trip = trips_db.get_target_trip(id=id_)
     if not trips_db.is_exists(id_):
         raise NotExistException
-    user = users_db.get_user(token=token)
-    if trip.owner == user:
-        raise AlreadyInTripException
-    for seat in seats:
-        if seat in get_taken_seats(trips_db.get_target_trip(id=id_)):
-            raise SeatIsTakenException
-    booking = Booking(
-        owner=users_db.get_user(token=token),
-        trip=trip
-    )
-    booking.set_seat(seats)
-
+    if seats:
+        for seat in seats:
+            if seat in get_taken_seats(trips_db.get_target_trip(id=id_)):
+                raise SeatIsTakenException
+        booking = Booking(
+            owner=users_db.get_user(token=token),
+            trip=trip
+        )
+        booking.set_seat(seats)
+    else:
+        booking = Booking(
+            owner=users_db.get_user(token=token),
+            trip=trip
+        )
     # asyncio.run(trips_db.notify(trip.owner.id, 'new booking'))
     booking.save()
     return booking.id
@@ -28,14 +30,13 @@ def book(token, id_, seats) -> int:
 
 def cancel_booking(token: str, id_: int):
     user = users_db.get_user(token=token)
-    booking = Booking.objects.get(owner=user, trip=trips_db.get_target_trip(id=id_))
+    booking = Booking.objects.filter(owner=user, trip=trips_db.get_target_trip(id=id_))
     if not booking:
         raise NotExistException
-    flag = booking.owner == user
-    if flag:
+    for booking in booking:
         booking.delete()
-    asyncio.run(trips_db.notify(booking.owner.id, 'cancel booking'))
-    return flag
+    # asyncio.run(trips_db.notify(booking.owner.id, 'cancel booking'))
+    return True
 
 
 def get_passengers(id_: int):

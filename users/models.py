@@ -3,7 +3,7 @@ from django.utils.timezone import now
 
 
 class Users(models.Model):
-    login = models.CharField(max_length=100, blank=True, null=True, verbose_name='Логин')
+    login = models.CharField(max_length=100, blank=True, null=True, verbose_name='Логин', unique=True)
     password = models.CharField(max_length=500, blank=True, null=True)
     token = models.CharField(max_length=500, blank=True, null=True, unique=True, verbose_name='Токен авторизации ('
                                                                                               'нужен на этапе '
@@ -14,6 +14,9 @@ class Users(models.Model):
     birth = models.IntegerField(blank=True, null=True, verbose_name='Дата рождения (timestamp)')
     photo = models.ImageField(null=True, blank=True, upload_to="media/", verbose_name='Аватарка')
     is_active = models.BooleanField(blank=True, default=True, verbose_name='Статус блокировки')
+    phone_number = models.CharField(max_length=100, blank=True, null=True, verbose_name='Телефон', unique=True)
+    email = models.CharField(max_length=100, blank=True, null=True, verbose_name='Почта', unique=True)
+    code = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = True
@@ -36,3 +39,24 @@ class Review(models.Model):
         managed = True
         db_table = 'reviews'
         verbose_name_plural = 'Отзывы'
+
+
+class Questions(models.Model):
+    question = models.CharField(max_length=1000, blank=True, null=True, verbose_name='Вопрос')
+    answer = models.CharField(max_length=10000, blank=True, null=True, verbose_name='Ответ')
+
+    class Meta:
+        managed = True
+        db_table = 'questions'
+        verbose_name_plural = 'Вопросы'
+
+
+class Blog(models.Model):
+    image = models.ImageField(null=True, blank=True, upload_to="media/", verbose_name='Картинка')
+    text = models.CharField(max_length=10000, blank=True, null=True, verbose_name='Ответ')
+    header = models.CharField(max_length=100, blank=True, null=True, verbose_name='Заголовок')
+
+    class Meta:
+        managed = True
+        db_table = 'blog'
+        verbose_name_plural = 'Блог'

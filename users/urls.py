@@ -25,5 +25,11 @@ urlpatterns = [
     path('update_user', views.update_user),
     path('change_photo', views.change_photo),
     path('review<int:id_>', views.review),
-    path('get_reviews', views.get_reviews)
+    path('get_reviews', views.get_reviews),
+    path('oauth_user', views.oauth_user),
+    path('reset_password', views.reset_password),
+    path('check_code', views.check_code),
+    path('reset_password_confirm', views.reset_password_confirm),
+    path('get_questions', views.get_questions),
+    path('get_blog', views.get_blog),
 ]

@@ -177,12 +177,13 @@ def get_past_trips_as_json(token):
 def get_all_booking(token):
     user = users_db.get_user(token=token)
     list_ = []
-    owner_list = []
+    trip_list = []
     for i in booking_db.get_all_booking(owner=user):
-        if i.owner not in owner_list:
+        if i.trip not in trip_list:
             list_.append(i)
-            owner_list.append(i.owner)
+            trip_list.append(i.trip)
     return list_
+
 
 def get_booked_trips(token):
     all_booking = get_all_booking(token)

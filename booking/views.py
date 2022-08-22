@@ -17,7 +17,7 @@ def book(request: HttpRequest, id_: int):
         return JsonResponse(
             {"success": True,
              "status": "You are successfully book",
-             "booking_id": db.book(token, id_, values["seats"])}
+             "booking_id": db.book(token, id_, values["seats"] if "seats" in values else None)}
         )
     except IntegrityError:
         return HttpResponseBadRequest('You are not authorized')
