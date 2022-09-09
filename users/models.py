@@ -17,6 +17,7 @@ class Users(models.Model):
     phone_number = models.CharField(max_length=100, blank=True, null=True, verbose_name='Телефон', unique=True)
     email = models.CharField(max_length=100, blank=True, null=True, verbose_name='Почта', unique=True)
     code = models.IntegerField(blank=True, null=True)
+    fcm_token = models.CharField(max_length=500, null=True, blank=True)
 
     class Meta:
         managed = True
@@ -53,7 +54,7 @@ class Questions(models.Model):
 
 class Blog(models.Model):
     image = models.ImageField(null=True, blank=True, upload_to="media/", verbose_name='Картинка')
-    text = models.CharField(max_length=10000, blank=True, null=True, verbose_name='Ответ')
+    text = models.CharField(max_length=10000, blank=True, null=True, verbose_name='Описание')
     header = models.CharField(max_length=100, blank=True, null=True, verbose_name='Заголовок')
 
     class Meta:

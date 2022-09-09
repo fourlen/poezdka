@@ -3,6 +3,7 @@ from users import db_communication as users_db
 from trips import db_communication as trips_db
 from booking.exceptions import *
 import asyncio
+from loguru import logger
 
 
 def book(token, id_, seats) -> int:
@@ -23,7 +24,8 @@ def book(token, id_, seats) -> int:
             owner=users_db.get_user(token=token),
             trip=trip
         )
-    # asyncio.run(trips_db.notify(trip.owner.id, 'new booking'))
+    trips_db.push_notify(trip.owner.fcm_token, 'Поездка', 'У вас новая бронь')
+    asyncio.run(trips_db.notify(trip.owner.id, 'new booking'))
     booking.save()
     return booking.id
 
@@ -35,7 +37,8 @@ def cancel_booking(token: str, id_: int):
         raise NotExistException
     for booking in booking:
         booking.delete()
-    # asyncio.run(trips_db.notify(booking.owner.id, 'cancel booking'))
+    trips_db.push_notify(user.fcm_token, 'cancel booking', 'cancel booking')
+    asyncio.run(trips_db.notify(booking.owner.id, 'cancel booking'))
     return True
 
 

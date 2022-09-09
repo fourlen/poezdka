@@ -7,6 +7,7 @@ import json
 @csrf_exempt
 def get_chat(request: HttpRequest):
     try:
+        logger.debug(request.body)
         values = json.loads(request.body)
         return JsonResponse(db_communication.get_chat_messages(from_id=values['from_id'], to_id=values['to_id']), safe=False)
     except Exception as err:

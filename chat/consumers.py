@@ -5,10 +5,14 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 # Импорт для работы с БД в асинхронном режиме
 from channels.db import database_sync_to_async
 # Импорт модели сообщений
+
+import django
+django.setup()
+
 from .models import Message
 from users.models import Users
 from loguru import logger
- 
+from trips.db_communication import push_notify
  
 # Класс ChatConsumer
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -42,16 +46,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Функция для создания нового сообщения в БД
     def new_message(self, from_id, to_id, message):
         # Создаём сообщение в БД
+        user_to = Users.objects.get(id=to_id)
         Message.objects.create(
             from_user = Users.objects.get(id=from_id),
-            to_user = Users.objects.get(id=to_id),
+            to_user = user_to,
             text=message
         )
+        push_notify(user_to.fcm_token, 'New message', message)
 
     
     @database_sync_to_async
     def get_user(self, token):
         return Users.objects.get(token=token)
+
+    @database_sync_to_async
+    def get_user_by_id(self, user_id):
+        return Users.objects.filter(id=user_id).first()
  
     # Принимаем сообщение от пользователя
     async def receive(self, text_data=None, bytes_data=None):
@@ -80,7 +90,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Получаем сообщение от receive
         message = event['message']
         # Отправляем сообщение клиентам
+        user = await self.get_user_by_id(int(event['from']))
         await self.send(text_data=json.dumps({
+            'from_name': f'{user.first_name} {user.last_name}' if user else 'BAZA',
             'from': event['from'],
             'message': message,
         }, ensure_ascii=False))

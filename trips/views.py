@@ -1,5 +1,5 @@
 import json
-
+from loguru import logger
 from django.http import HttpRequest, HttpResponseServerError, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 import trips.db_communication as db
@@ -43,6 +43,7 @@ def delete_trip(request: HttpRequest, id_: int):
                 }
             )
     except Exception as ex:
+        logger.exception(ex)
         return HttpResponseBadRequest(ex)
 
 

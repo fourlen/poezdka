@@ -24,12 +24,14 @@ def add_user(values: dict, token=None) -> tuple:
         birth=values['birth'],
         email=email,
         phone_number=phone,
+        fcm_token=values['fcm_token']
     )
     user.save()
     return token, user
 
 
 def oauth_user(user):
+    print(user)
     if user["email"]:
         if get_user(login=user["email"]):
             return get_user_as_json(get_user(login=user["email"]))
@@ -41,6 +43,7 @@ def oauth_user(user):
                 first_name=user["first_name"],
                 last_name=user["last_name"],
                 email=user["email"],
+                fcm_token=user['fcm_token']
             )
             user.save()
             return get_user_as_json(user)
@@ -64,10 +67,10 @@ def update_user(values: dict, token: str):
     user = get_user(
         token=token
     )
-    if values['firstname']:
-        user.first_name = values['firstname']
-    if values['lastname']:
-        user.last_name = values['lastname']
+    if values['first_name']:
+        user.first_name = values['first_name']
+    if values['last_name']:
+        user.last_name = values['last_name']
     if values['gender']:
         user.gender = values['gender']
     if values['birth']:
@@ -77,10 +80,9 @@ def update_user(values: dict, token: str):
             user.phone_number = values['phone_number']
     if "email" in values:
         if values['email']:
-            user.phone_number = values['email']
+            user.email = values['email']
     user.save()
     return get_user_as_json(user)
-
 
 def get_user(**kwargs) -> Users:
     user = Users.objects.filter(

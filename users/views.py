@@ -79,6 +79,7 @@ def auth(request: HttpRequest):
                 'error': 'User with such login does not exists'
             })
         if user.password == password:
+            user.fcm_token = values['fcm_token']
             return JsonResponse({
                 'authorized': True,
                 'token': user.token,
@@ -147,7 +148,6 @@ def oauth_user(request: HttpRequest):
         logger.error(err)
         return HttpResponseServerError(f'Something goes wrong: {err}')
 
-
 @csrf_exempt
 def update_user(request: HttpRequest):
     try:
@@ -161,7 +161,8 @@ def update_user(request: HttpRequest):
             db.update_user(values, token)
         )
     except Exception as err:
-        return HttpResponseServerError(f'Something goes wrong: {err}')
+        print(err)
+        return HttpResponseBadRequest(f'Something goes wrong: {err}')
 
 
 @csrf_exempt
@@ -225,7 +226,7 @@ def reset_password(request: HttpRequest) -> HttpResponse:
 def check_code(request: HttpRequest) -> HttpResponse:
     try:
         values = json.loads(request.body)
-        return JsonResponse(db.check_code(values["code"], values["email"]))
+        return JsonResponse(db.check_code(values["code"], values["login"]))
     except NotExistException:
         return HttpResponseBadRequest('Can\'t find user')
     except NotValidException as ex:

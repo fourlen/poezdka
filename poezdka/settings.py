@@ -9,7 +9,10 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+
+
 import os
+os.environ.setdefault("DJANGO_SETTINGS_MODULE","poezdka.settings")
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,12 +42,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'cars',
-    'chat',
+    'chat.apps.ChatConfig',
     'channels',
     'trips',
     'social_django',
     'booking'
 ]
+#os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'poezdka.settings')
+#import django
+#django.setup()
+
 
 ASGI_APPLICATION = 'poezdka.asgi.application'
 
@@ -90,7 +97,6 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-LOGIN_REDIRECT_URL = '/users/oauth_user'
 LOGOUT_REDIRECT_URL = '/admin/'
 
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
@@ -151,14 +157,12 @@ MEDIA_URL = ''
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "poezdka.org@gmail.com"
-EMAIL_HOST_PASSWORD = "vpkcuukynuzkbbfr"
-
+EMAIL_HOST_USER = "stepanenko.valera2013@gmail.com"
+EMAIL_HOST_PASSWORD = "izjonwpepvcqhhky"
 
 LANGUAGE_CODE = 'ru-ru'
 
@@ -173,7 +177,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+import os.path
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+STATICFILES_DIRS = (
+            os.path.join(PROJECT_ROOT, 'static'),
+            )
+
+STATIC_URL='static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

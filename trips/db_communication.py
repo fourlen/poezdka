@@ -6,6 +6,11 @@ import time
 import trips.utils as utils
 import asyncio
 from channels.layers import get_channel_layer
+from pyfcm import FCMNotification
+from loguru import logger
+
+push_service = FCMNotification(api_key="AAAA68C-FkQ:APA91bFDZ-Nura-qToN9M3ggcg1ULr5_-yEggMTuTiY4LNYmf9XVyZQ2hW-HjXMNru-HOisB0pSO_Hq-s8BHj3ZdVw82jiIw7C4IoimdBYZ7VKIHCPDQ89ip2nfCK2NWmGz8GJPfgu47")
+
 
 channel_layer = get_channel_layer()
 
@@ -111,6 +116,13 @@ async def notify(reciever_id, message):
         )
 
 
+def push_notify(fcm_token, title, message):
+    if fcm_token:
+        result = push_service.notify_single_device(registration_id=fcm_token, message_title=title, message_body=message)
+        logger.debug(result)
+    else:
+        logger.debug('FCM token is NONE!!!')
+
 def delete_trip(token: str, id_: int):
     user = users_db.get_user(token=token)
     trip = get_target_trip(id=id_)
@@ -118,6 +130,7 @@ def delete_trip(token: str, id_: int):
     if flag:
         for passanger in booking_db.get_passengers(trip.id):
             asyncio.run(notify(passanger.id, 'trip deleted'))
+            push_notify(passanger.fcm_token, 'Поездка', 'Забронированная поездка была удалена водителем')
         trip.delete()
     return flag
 
