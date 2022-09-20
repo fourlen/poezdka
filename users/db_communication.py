@@ -1,11 +1,14 @@
 import base64
 from django.core.files.base import ContentFile
 from .exceptions import NotExistException, NotValidException
-from .models import Users, Review, Questions, Blog
+from .models import *
 import hashlib
 from users import utils
+import trips.db_communication as trips_db
 import cars.db_communication as cars_db
 import booking.db_communication as booking_db
+from loguru import logger
+import asyncio
 
 
 def add_user(values: dict, token=None) -> tuple:
@@ -26,6 +29,7 @@ def add_user(values: dict, token=None) -> tuple:
         phone_number=phone,
         fcm_token=values['fcm_token']
     )
+    logger.debug(f'Created new user with fcm token {values["fcm_token"]}')
     user.save()
     return token, user
 
@@ -151,6 +155,8 @@ def set_review(user, id_, message, mark):
         message=message,
         mark=mark
     )
+    trips_db.push_notify(get_user(id=id_).fcm_token, 'Поездка', f'У вас новый отзыв от {user.first_name}')
+    asyncio.run(trips_db.notify(id_, 'new review'))
     review.save()
 
 
@@ -274,3 +280,40 @@ def get_blog():
                 for i in Blog.objects.all()
             ]
         }
+
+
+def put_phone_number(token, values):
+    user = get_user(
+        token=token
+    )
+    user.phone_number = values['phone_number']
+    user.save()
+    return get_user_as_json(user)
+
+
+def get_info():
+    return {
+        "info":
+            {
+                "text": ProjectInfo.objects.all().first().text
+            }
+        }
+
+
+def get_offer():
+    return {
+        "info":
+            {
+                "text": ProjectOffer.objects.all().first().text
+            }
+        }
+
+
+def get_pol():
+    return {
+        "info":
+            {
+                "text": ProjectPolitic.objects.all().first().text
+            }
+        }
+

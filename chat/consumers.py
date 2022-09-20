@@ -52,9 +52,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             to_user = user_to,
             text=message
         )
-        push_notify(user_to.fcm_token, 'New message', message)
+        push_notify(user_to.fcm_token, f'Новое сообщение от {Users.objects.get(id=from_id).first_name}', message)
 
-    
     @database_sync_to_async
     def get_user(self, token):
         return Users.objects.get(token=token)
@@ -90,7 +89,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Получаем сообщение от receive
         message = event['message']
         # Отправляем сообщение клиентам
-        user = await self.get_user_by_id(int(event['from']))
+        if event['from'] != 'BAZA':
+            user = await self.get_user_by_id(int(event['from']))
+        else:
+            user = None
         await self.send(text_data=json.dumps({
             'from_name': f'{user.first_name} {user.last_name}' if user else 'BAZA',
             'from': event['from'],

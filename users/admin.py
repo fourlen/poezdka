@@ -26,3 +26,18 @@ class QuestionsAdmin(admin.ModelAdmin):
 class QuestionsAdmin(admin.ModelAdmin):
     list_display = ('id', 'image', 'header', 'text')
     search_fields = ['header']
+
+
+@admin.register(ProjectInfo)
+class InfoAdmin(admin.ModelAdmin):
+    list_display = ('text', )
+
+
+@admin.register(ProjectOffer)
+class OfferAdmin(admin.ModelAdmin):
+    list_display = ('text', )
+
+
+@admin.register(ProjectPolitic)
+class PoliticAdmin(admin.ModelAdmin):
+    list_display = ('text', )

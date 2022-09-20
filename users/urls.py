@@ -32,4 +32,8 @@ urlpatterns = [
     path('reset_password_confirm', views.reset_password_confirm),
     path('get_questions', views.get_questions),
     path('get_blog', views.get_blog),
+    path('put_phone', views.put_phone),
+    path('info', views.get_info),
+    path('offer', views.get_offer),
+    path('politic', views.get_pol),
 ]

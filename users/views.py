@@ -194,6 +194,7 @@ def review(request: HttpRequest, id_: int) -> HttpResponse:
             }
         )
     except Exception as ex:
+        print(ex)
         return HttpResponseServerError(f'Something goes wrong: {ex}')
 
 
@@ -266,6 +267,54 @@ def get_blog(request: HttpRequest) -> HttpResponse:
     try:
         return JsonResponse(
             db.get_blog()
+        )
+    except Exception as ex:
+        return HttpResponseServerError(f'Something goes wrong: {ex}')
+
+
+@csrf_exempt
+def put_phone(request: HttpRequest):
+    try:
+        if request.method != 'PUT':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
+        token = request.headers.get('Authorization')
+        values = json.loads(request.body)
+        return JsonResponse(
+            db.put_phone_number(token, values)
+        )
+    except Exception as ex:
+        return HttpResponseBadRequest(ex)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_info(request: HttpRequest) -> HttpResponse:
+    try:
+        return JsonResponse(
+            db.get_info()
+        )
+    except Exception as ex:
+        return HttpResponseServerError(f'Something goes wrong: {ex}')
+
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_offer(request: HttpRequest) -> HttpResponse:
+    try:
+        return JsonResponse(
+            db.get_offer()
+        )
+    except Exception as ex:
+        return HttpResponseServerError(f'Something goes wrong: {ex}')
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_pol(request: HttpRequest) -> HttpResponse:
+    try:
+        return JsonResponse(
+            db.get_pol()
         )
     except Exception as ex:
         return HttpResponseServerError(f'Something goes wrong: {ex}')

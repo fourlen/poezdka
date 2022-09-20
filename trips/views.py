@@ -1,6 +1,6 @@
 import json
 from loguru import logger
-from django.http import HttpRequest, HttpResponseServerError, JsonResponse, HttpResponseBadRequest
+from django.http import HttpRequest, HttpResponseServerError, JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import trips.db_communication as db
 
@@ -120,3 +120,15 @@ def main_drivers_trips(request: HttpRequest):
         )
     except Exception as err:
         return HttpResponseBadRequest(f'Something goes wrong: {err}')
+
+
+
+@csrf_exempt
+def get_lvl(request: HttpRequest) -> HttpResponse:
+    try:
+        token = request.headers.get('Authorization')
+        return JsonResponse(
+            db.get_ranked(token)
+        )
+    except Exception as ex:
+        return HttpResponseServerError(f'Something goes wrong: {ex}')

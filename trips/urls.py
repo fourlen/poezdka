@@ -11,4 +11,6 @@ urlpatterns = [
     path('get_past_booked_trips', views.get_past_booked_trips),
     path('get_all_trips', views.main_trips),
     path('get_all_drivers_trips', views.main_drivers_trips),
+    path('rank', views.get_lvl),
+
 ]

@@ -50,3 +50,31 @@ def cancel_booking(request: HttpRequest, id_: int):
         return HttpResponseBadRequest('Booking does not exist')
     except Exception as ex:
         return HttpResponseBadRequest(f'Something goes wrong: {ex}')
+
+
+@csrf_exempt
+def cancel_booking_for_driver(request: HttpRequest):
+    try:
+        if request.method != 'DELETE':
+            return HttpResponseBadRequest("Wrong request method (GET, POST, PUT, DELETE)")
+        token = request.headers.get('Authorization')
+        values = json.loads(request.body)
+        status = db.cancel_booking_for_driver(token, values['trip_id'], values['user_id'])
+        if not status:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Access denied"
+                }
+            )
+        else:
+            return JsonResponse(
+                {
+                    "success": True,
+                    "status": "Trip deleted",
+                }
+            )
+    except NotExistException:
+        return HttpResponseBadRequest('Booking does not exist')
+    except Exception as ex:
+        return HttpResponseBadRequest(f'Something goes wrong: {ex}')

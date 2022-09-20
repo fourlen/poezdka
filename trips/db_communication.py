@@ -75,6 +75,12 @@ def add_trip(values, token):
     add_departure(values["departure"], trip)
     for stop in values["stops"]:
         add_stop(stop, trip)
+    try:
+        if values["seats"]:
+            print(values["seats"])
+            booking_db.book(token, trip.id, values["seats"])
+    except KeyError:
+        pass
 
 
 def add_departure(departure: dict, trip: Trips):
@@ -123,6 +129,7 @@ def push_notify(fcm_token, title, message):
     else:
         logger.debug('FCM token is NONE!!!')
 
+
 def delete_trip(token: str, id_: int):
     user = users_db.get_user(token=token)
     trip = get_target_trip(id=id_)
@@ -155,13 +162,13 @@ def get_trips(token):
                 [Trips.objects.get(id=i.trip_id) for i in all_booking]
             )
         )
-    return list_
+    return sorted(list_, key=lambda x: x.id)
 
 
 def get_trips_as_json(token):
     return [
         pretty_trip(trip) for trip in get_trips(token)
-    ]
+    ][::-1]
 
 
 def get_past_trips(token):
@@ -178,7 +185,7 @@ def get_past_trips(token):
                 [Trips.objects.get(id=i.trip_id) for i in all_booking]
             )
         )
-    return list_
+    return sorted(list_, key=lambda x: x.id)
 
 
 def get_past_trips_as_json(token):
@@ -195,7 +202,7 @@ def get_all_booking(token):
         if i.trip not in trip_list:
             list_.append(i)
             trip_list.append(i.trip)
-    return list_
+    return sorted(list_, key=lambda x: x.id)
 
 
 def get_booked_trips(token):
@@ -212,7 +219,7 @@ def get_booked_trips(token):
                 [Trips.objects.get(id=i.trip_id) for i in all_booking]
             )
         )
-    return list_
+    return sorted(list_, key=lambda x: x.id)
 
 
 def get_booked_trips_as_json(token):
@@ -235,7 +242,8 @@ def get_past_booked_trips(token):
                 [Trips.objects.get(id=i.trip_id) for i in all_booking]
             )
         )
-    return list_
+    return sorted(list_, key=lambda x: x.id)
+
 
 def get_past_booked_trips_as_json(token):
     return [
@@ -347,7 +355,7 @@ def get_filter_trips(values: dict, all_trips):
                 map(
                     pretty_trip, get_packet(sorted(
                         copy, key=lambda x: not x.premium
-                    ), packet)
+                    )[::-1], packet)
                 )
             )
         }
@@ -418,4 +426,27 @@ def pretty_trip(trip: Trips):
         "passengers": [users_db.get_user_for_trip(i, trip) for i in booking_db.get_passengers(trip.id)],
         "conditioner": trip.conditioner,
         "owner_gender": trip.owner.gender,
+    }
+
+
+def count_distance(trip: Trips):
+    set_ = trip.stops_set
+    sum_ = 0
+    for stop in set_.all():
+        sum_ += stop.distance_to_previous 
+    return sum_
+
+
+def get_ranked(token):
+    sum_ = 0
+    user = users_db.get_user(token=token)
+    for trip in Trips.objects.filter(owner=user):
+        if trip.start < time.time() * 1_000_000:
+            sum_ += count_distance(trip)
+    for booking in booking_db.get_all_booking(user):
+        if booking.trip.start < time.time() * 1_000_000:
+            sum_ += count_distance(booking.trip)
+    return {
+        "km_sum": sum_,
+        "level": sum_ // 100
     }

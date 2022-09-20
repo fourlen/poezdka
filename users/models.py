@@ -61,3 +61,30 @@ class Blog(models.Model):
         managed = True
         db_table = 'blog'
         verbose_name_plural = 'Блог'
+
+
+class ProjectInfo(models.Model):
+    text = models.CharField(max_length=10000, blank=True, null=True, verbose_name='О проекте')
+
+    class Meta:
+        managed = True
+        db_table = 'info'
+        verbose_name_plural = 'О проекте'
+
+
+class ProjectOffer(models.Model):
+    text = models.CharField(max_length=10000, blank=True, null=True, verbose_name='Публичная оферта')
+
+    class Meta:
+        managed = True
+        db_table = 'offer'
+        verbose_name_plural = 'Публичная оферта'
+
+
+class ProjectPolitic(models.Model):
+    text = models.CharField(max_length=10000, blank=True, null=True, verbose_name='Политика соглашения')
+
+    class Meta:
+        managed = True
+        db_table = 'politic'
+        verbose_name_plural = 'Политика соглашения'

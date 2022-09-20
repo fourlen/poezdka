@@ -24,7 +24,14 @@ def book(token, id_, seats) -> int:
             owner=users_db.get_user(token=token),
             trip=trip
         )
-    trips_db.push_notify(trip.owner.fcm_token, 'Поездка', 'У вас новая бронь')
+    if seats:
+        trips_db.push_notify(trip.owner.fcm_token, 'Поездка', f'У вас новая бронь. Поездка'
+                                                              f' {trip.departure_set.first().name}-'
+                                                              f'{trip.stops_set.last().name}')
+    else:
+        trips_db.push_notify(trip.owner.fcm_token, 'Поездка', f'Бронирование передачи посылки. Поездка'
+                                                              f' {trip.departure_set.first().name}-'
+                                                              f'{trip.stops_set.last().name}')
     asyncio.run(trips_db.notify(trip.owner.id, 'new booking'))
     booking.save()
     return booking.id
@@ -32,13 +39,27 @@ def book(token, id_, seats) -> int:
 
 def cancel_booking(token: str, id_: int):
     user = users_db.get_user(token=token)
-    booking = Booking.objects.filter(owner=user, trip=trips_db.get_target_trip(id=id_))
-    if not booking:
+    bookings = Booking.objects.filter(owner=user, trip=trips_db.get_target_trip(id=id_))
+    if not bookings:
         raise NotExistException
-    for booking in booking:
+    for booking in bookings:
         booking.delete()
     trips_db.push_notify(user.fcm_token, 'cancel booking', 'cancel booking')
-    asyncio.run(trips_db.notify(booking.owner.id, 'cancel booking'))
+    asyncio.run(trips_db.notify(booking.trip.owner.id, 'cancel booking'))
+    return True
+
+
+def cancel_booking_for_driver(token: str, trip_id: int, user_id):
+    driver = users_db.get_user(token=token)
+    user = users_db.get_user(id=user_id)
+    trip = trips_db.get_target_trip(id=trip_id)
+    if trip.owner != driver:
+        raise Exception('Khui tebe')
+    bookings = Booking.objects.filter(owner_id=user_id, trip=trip)
+    for booking in bookings:
+        booking.delete()
+    trips_db.push_notify(user.fcm_token, 'cancel booking', 'cancel booking')
+    asyncio.run(trips_db.notify(user.id, 'cancel booking'))
     return True
 
 
@@ -63,6 +84,7 @@ def get_user_seat(user, trip):
         return list_
     else:
         raise NotInTripException
+
 
 def get_taken_seats(trip):
     taken = []
